@@ -125,8 +125,14 @@ const arrow = (
 export function InnovationJourney() {
   return (
     <div className="w-full">
+      {/* Mobile swipe indicator */}
+      <div className="md:hidden flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-600 mb-3.5 bg-slate-100/90 py-1.5 px-3.5 rounded-full border border-slate-200/70 w-fit mx-auto select-none">
+        <span>Scroll to explore 8-step pathway</span>
+        <span className="text-primary font-bold text-xs">→</span>
+      </div>
+
       {/* Horizontal scroller: the sequence must not reflow */}
-      <div className="overflow-x-auto pb-4">
+      <div className="overflow-x-auto pb-4 scroll-smooth touch-pan-x">
         <div className="flex min-w-[1180px] flex-col gap-10 lg:gap-12">
           {/* Eight sequential steps */}
           <div className="relative grid grid-cols-8 items-start" aria-label="Eight steps of innovation">

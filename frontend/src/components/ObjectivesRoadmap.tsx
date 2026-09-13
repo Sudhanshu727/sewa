@@ -227,49 +227,108 @@ const downArrow = (
 
 export function ObjectivesRoadmap() {
   return (
-    <div className="objectives-grid w-full">
-      {objectives.map((item, i) => (
-        <Fragment key={item.number}>
-          {/* Number badge */}
-          <div
-            className="flex shrink-0 items-center justify-center rounded-full"
-            style={{ width: BADGE, height: BADGE, backgroundColor: item.numberBg }}
-          >
-            <span
-              className="font-bold tracking-tight"
-              style={{ color: item.ink, fontSize: 19, lineHeight: 1 }}
+    <div className="w-full">
+      {/* Mobile-Friendly Full-Width Stack (screens < 640px) */}
+      <div className="block sm:hidden space-y-3 px-1">
+        {objectives.map((item, i) => (
+          <Fragment key={`m-${item.number}`}>
+            <div className="roadmap-card p-4 bg-white shadow-2xs">
+              <div className="flex items-center gap-2.5 mb-2">
+                {/* Number badge */}
+                <div
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full"
+                  style={{ backgroundColor: item.numberBg }}
+                >
+                  <span
+                    className="font-bold tracking-tight text-xs"
+                    style={{ color: item.ink }}
+                  >
+                    {item.number}
+                  </span>
+                </div>
+
+                {/* Icon badge */}
+                <div
+                  className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+                  style={{
+                    backgroundColor: item.iconBg,
+                    borderColor: item.numberBg,
+                    color: item.ink,
+                  }}
+                >
+                  <div className="scale-75 origin-center">
+                    {item.icon}
+                  </div>
+                </div>
+
+                {/* Title */}
+                <h3 className="text-xs sm:text-sm font-bold text-[#172554] tracking-tight leading-snug">
+                  {item.title}
+                </h3>
+              </div>
+
+              {/* Body */}
+              <p className="text-xs text-slate-600 leading-relaxed pl-0.5">
+                {item.body}
+              </p>
+            </div>
+
+            {i < objectives.length - 1 && (
+              <div aria-hidden="true" className="flex w-full justify-center py-1 text-slate-300">
+                <svg width={14} height={14} fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                  <path d="M19 14l-7 7m0 0l-7-7m7 7V3" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+            )}
+          </Fragment>
+        ))}
+      </div>
+
+      {/* Desktop / Tablet Grid (screens >= 640px) */}
+      <div className="hidden sm:grid objectives-grid w-full">
+        {objectives.map((item, i) => (
+          <Fragment key={item.number}>
+            {/* Number badge */}
+            <div
+              className="flex shrink-0 items-center justify-center rounded-full"
+              style={{ width: BADGE, height: BADGE, backgroundColor: item.numberBg }}
             >
-              {item.number}
-            </span>
-          </div>
+              <span
+                className="font-bold tracking-tight"
+                style={{ color: item.ink, fontSize: 19, lineHeight: 1 }}
+              >
+                {item.number}
+              </span>
+            </div>
 
-          {/* Icon badge */}
-          <div
-            className="flex shrink-0 items-center justify-center rounded-full border"
-            style={{
-              width: BADGE,
-              height: BADGE,
-              backgroundColor: item.iconBg,
-              borderColor: item.numberBg,
-              color: item.ink,
-            }}
-          >
-            {item.icon}
-          </div>
+            {/* Icon badge */}
+            <div
+              className="flex shrink-0 items-center justify-center rounded-full border"
+              style={{
+                width: BADGE,
+                height: BADGE,
+                backgroundColor: item.iconBg,
+                borderColor: item.numberBg,
+                color: item.ink,
+              }}
+            >
+              {item.icon}
+            </div>
 
-          {/* Content card */}
-          <div className="roadmap-card px-5 py-5 sm:px-6">
-            <h2 className="t-subheading-2 mb-2 text-left tracking-tight text-[#0f172a] [hyphens:none]">
-              {item.title}
-            </h2>
-            <p className="t-content text-left text-[#475569] [hyphens:none]">
-              {item.body}
-            </p>
-          </div>
+            {/* Content card */}
+            <div className="roadmap-card px-5 py-5 sm:px-6">
+              <h2 className="t-subheading-2 mb-2 text-left tracking-tight text-[#0f172a] [hyphens:none]">
+                {item.title}
+              </h2>
+              <p className="t-content text-left text-[#475569] [hyphens:none]">
+                {item.body}
+              </p>
+            </div>
 
-          {i < objectives.length - 1 && downArrow}
-        </Fragment>
-      ))}
+            {i < objectives.length - 1 && downArrow}
+          </Fragment>
+        ))}
+      </div>
     </div>
   );
 }

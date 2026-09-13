@@ -257,98 +257,153 @@ export function TimelineRoadmap() {
   }, []);
 
   return (
-    <div
-      ref={frameRef}
-      className="w-full overflow-hidden"
-      style={{ aspectRatio: `${STAGE_WIDTH} / ${STAGE_HEIGHT}` }}
-      role="img"
-      aria-label="Timeline of the 100 day journey: Ideate, Screen, Build, Validate, Test, Select"
-    >
+    <div className="w-full">
+      {/* Mobile-Friendly Vertical Stepper Timeline (screens < 768px) */}
+      <div className="block md:hidden py-3 px-1">
+        <div className="relative border-l-2 border-slate-200 ml-4 space-y-5 sm:space-y-6 pl-5 sm:pl-6">
+          {steps.map((step) => {
+            const dateParts = step.dates.split("•");
+            const dayRange = dateParts[0]?.trim();
+            const dateSpan = dateParts[1]?.trim();
+
+            return (
+              <div key={step.number} className="relative">
+                {/* Node circle on the vertical spine */}
+                <div
+                  className="absolute -left-[31px] top-1.5 size-7 rounded-full flex items-center justify-center shadow-xs ring-4 ring-white"
+                  style={{ backgroundColor: step.color }}
+                >
+                  <span className="text-white text-[10px] font-black leading-none">
+                    {step.number}
+                  </span>
+                </div>
+
+                {/* Step Card */}
+                <div className="rounded-2xl bg-[#fbfbfc] border border-slate-200/80 p-4 shadow-2xs">
+                  <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
+                    <span
+                      className="text-sm font-black uppercase tracking-tight"
+                      style={{ color: step.color }}
+                    >
+                      {step.title}
+                    </span>
+                    {dayRange && (
+                      <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                        {dayRange}
+                      </span>
+                    )}
+                  </div>
+
+                  {dateSpan && (
+                    <div className="text-[11px] font-semibold text-slate-700 mb-2">
+                      {dateSpan}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                    {step.body}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Desktop / Tablet Scaled Graphic (screens >= 768px) */}
       <div
-        className="relative select-none"
-        style={{
-          width: STAGE_WIDTH,
-          height: STAGE_HEIGHT,
-          transformOrigin: "top left",
-          transform: `scale(${scale})`,
-        }}
+        ref={frameRef}
+        className="hidden md:block w-full overflow-hidden"
+        style={{ aspectRatio: `${STAGE_WIDTH} / ${STAGE_HEIGHT}` }}
+        role="img"
+        aria-label="Timeline of the 100 day journey: Ideate, Screen, Build, Validate, Test, Select"
       >
-        {/* Continuous segmented bar */}
-        <div className="absolute left-0 w-full h-[18px] flex z-10" style={{ top: BAR_TOP }}>
+        <div
+          className="relative select-none"
+          style={{
+            width: STAGE_WIDTH,
+            height: STAGE_HEIGHT,
+            transformOrigin: "top left",
+            transform: `scale(${scale})`,
+          }}
+        >
+          {/* Continuous segmented bar */}
+          <div className="absolute left-0 w-full h-[18px] flex z-10" style={{ top: BAR_TOP }}>
+            {steps.map((step) => (
+              <div
+                key={step.number}
+                className="h-full"
+                style={{ width: `${step.segment}%`, backgroundColor: step.color }}
+              />
+            ))}
+          </div>
+
+          {/* Node dots on the bar */}
           {steps.map((step) => (
             <div
-              key={step.number}
-              className="h-full"
-              style={{ width: `${step.segment}%`, backgroundColor: step.color }}
-            />
+              key={`node-${step.number}`}
+              className="absolute -translate-x-1/2 z-30 flex flex-col items-center"
+              style={{ left: step.nodeLeft, top: BAR_TOP - 11 }}
+            >
+              <div
+                className="rounded-full flex items-center justify-center shadow-md"
+                style={{ width: 40, height: 40, backgroundColor: step.color }}
+              >
+                <div className="rounded-full bg-white node-dot-shadow" style={{ width: 20, height: 20 }} />
+              </div>
+            </div>
+          ))}
+
+          {/* Pins and stems */}
+          {steps.map((step) => (
+            <Pin key={`pin-${step.number}`} step={step} />
+          ))}
+
+          {/* Large display numbers */}
+          {steps.map((step) => (
+            <div
+              key={`num-${step.number}`}
+              className="absolute z-20 select-none pointer-events-none"
+              style={{ left: step.numberLeft, top: step.numberTop }}
+            >
+              <span
+                className="font-black tracking-tight"
+                style={{ color: step.color, fontSize: 44, lineHeight: 1 }}
+              >
+                {step.number}
+              </span>
+            </div>
+          ))}
+
+          {/* Text blocks */}
+          {steps.map((step) => (
+            <div
+              key={`text-${step.number}`}
+              className="absolute z-40 text-left [hyphens:none]"
+              style={{ left: step.textLeft, top: step.textTop, width: step.textWidth }}
+            >
+              <p
+                className="flex items-center gap-2 text-left font-black tracking-tight text-[#0f172a] uppercase [hyphens:none]"
+                style={{ fontSize: 22, lineHeight: 1.2 }}
+              >
+                <span style={{ color: step.color }}>{step.number}</span>
+                {step.title}
+              </p>
+              <p
+                className="mt-1 text-left font-bold text-slate-800 [hyphens:none]"
+                style={{ fontSize: 12.5, lineHeight: 1.4 }}
+              >
+                {step.dates}
+              </p>
+              <p
+                className="mt-1 text-left font-medium text-slate-700 [hyphens:none]"
+                style={{ fontSize: 14, lineHeight: 1.5 }}
+              >
+                {step.body}
+              </p>
+            </div>
           ))}
         </div>
-
-        {/* Node dots on the bar */}
-        {steps.map((step) => (
-          <div
-            key={`node-${step.number}`}
-            className="absolute -translate-x-1/2 z-30 flex flex-col items-center"
-            style={{ left: step.nodeLeft, top: BAR_TOP - 11 }}
-          >
-            <div
-              className="rounded-full flex items-center justify-center shadow-md"
-              style={{ width: 40, height: 40, backgroundColor: step.color }}
-            >
-              <div className="rounded-full bg-white node-dot-shadow" style={{ width: 20, height: 20 }} />
-            </div>
-          </div>
-        ))}
-
-        {/* Pins and stems */}
-        {steps.map((step) => (
-          <Pin key={`pin-${step.number}`} step={step} />
-        ))}
-
-        {/* Large display numbers */}
-        {steps.map((step) => (
-          <div
-            key={`num-${step.number}`}
-            className="absolute z-20 select-none pointer-events-none"
-            style={{ left: step.numberLeft, top: step.numberTop }}
-          >
-            <span
-              className="font-black tracking-tight"
-              style={{ color: step.color, fontSize: 44, lineHeight: 1 }}
-            >
-              {step.number}
-            </span>
-          </div>
-        ))}
-
-        {/* Text blocks */}
-        {steps.map((step) => (
-          <div
-            key={`text-${step.number}`}
-            className="absolute z-40 text-left [hyphens:none]"
-            style={{ left: step.textLeft, top: step.textTop, width: step.textWidth }}
-          >
-            <p
-              className="flex items-center gap-2 text-left font-black tracking-tight text-[#0f172a] uppercase [hyphens:none]"
-              style={{ fontSize: 22, lineHeight: 1.2 }}
-            >
-              <span style={{ color: step.color }}>{step.number}</span>
-              {step.title}
-            </p>
-            <p
-              className="mt-1 text-left font-bold text-slate-800 [hyphens:none]"
-              style={{ fontSize: 12.5, lineHeight: 1.4 }}
-            >
-              {step.dates}
-            </p>
-            <p
-              className="mt-1 text-left font-medium text-slate-700 [hyphens:none]"
-              style={{ fontSize: 14, lineHeight: 1.5 }}
-            >
-              {step.body}
-            </p>
-          </div>
-        ))}
       </div>
     </div>
   );

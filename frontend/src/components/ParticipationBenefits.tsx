@@ -219,94 +219,154 @@ export function ParticipationBenefits() {
   }, []);
 
   return (
-    <div
-      ref={frameRef}
-      className="diagram-frame"
-      style={{ "--diagram-scale": scale } as React.CSSProperties}
-      role="img"
-      aria-label="Participation Benefits — seven benefits of taking part in SEWA FIRST RYIC 2026"
-    >
-      <div className="diagram-stage">
-        {/* Connector network, drawn under the cards */}
-        <svg
-          className="absolute inset-0 w-full h-full pointer-events-none z-10"
-          fill="none"
-          viewBox="0 0 1200 680"
-          xmlns="http://www.w3.org/2000/svg"
-          aria-hidden="true"
-        >
-          {connectors.map((c, i) => (
-            <g key={i}>
-              <path
-                d={c.d}
-                stroke={c.color}
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth="2.5"
-              />
-              {c.dots.map(([cx, cy], j) => (
-                <circle key={j} cx={cx} cy={cy} r="4.5" fill={c.color} />
-              ))}
-            </g>
-          ))}
-        </svg>
-
-        {/* Central label card */}
-        <div
-          className="absolute z-20 bg-white rounded-2xl p-6 px-8 soft-card-shadow border border-slate-100 flex flex-col justify-center"
-          style={{ left: 95, top: 295, width: 400, height: 132 }}
-        >
-          <p className="text-3xl font-extrabold tracking-tight text-slate-800 text-left">
+    <div className="w-full">
+      {/* Mobile-Friendly Grid View (screens < 768px) */}
+      <div className="block md:hidden space-y-4 px-1 py-2">
+        {/* Central label card on mobile */}
+        <div className="rounded-2xl bg-white p-5 soft-card-shadow border border-slate-100 text-center">
+          <p className="text-xl font-extrabold tracking-tight text-slate-800">
             Participation <span className="text-[#0e3b43]">Benefits</span>
           </p>
 
-          <div className="flex h-[3px] w-full rounded-full overflow-hidden mt-3 mb-3 bg-slate-200">
+          <div className="flex h-[3px] w-full rounded-full overflow-hidden my-3 bg-slate-200">
             <div className="w-[32%] bg-[#e58a2d]" />
             <div className="w-[28%] bg-[#4fa77f]" />
             <div className="w-[40%] bg-[#0e3b43]" />
           </div>
 
-          <div className="text-[11px] font-bold text-slate-700 tracking-wider flex items-center justify-between uppercase">
+          <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider flex items-center justify-center gap-2 uppercase flex-wrap">
             <span>Learn</span>
-            <span className="text-slate-300 font-normal">|</span>
+            <span className="text-slate-300 font-normal">•</span>
             <span>Connect</span>
-            <span className="text-slate-300 font-normal">|</span>
+            <span className="text-slate-300 font-normal">•</span>
             <span>Create</span>
-            <span className="text-slate-300 font-normal">|</span>
+            <span className="text-slate-300 font-normal">•</span>
             <span>Make an Impact</span>
           </div>
         </div>
 
-        {/* Benefit cards */}
-        {cards.map((card) => (
-          <article
-            key={card.id}
-            className={`absolute z-20 rounded-2xl p-5 pt-8 soft-card-shadow transition-transform hover:-translate-y-0.5 ${card.centered ? "text-center" : ""}`}
-            style={{
-              left: card.left,
-              top: card.top,
-              width: card.width,
-              minHeight: card.minHeight,
-              backgroundColor: card.surface,
-            }}
+        {/* 7 Benefit Cards in a clean, readable mobile grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+          {cards.map((card) => (
+            <article
+              key={card.id}
+              className="rounded-2xl p-4.5 soft-card-shadow transition-all"
+              style={{ backgroundColor: card.surface }}
+            >
+              <div className="flex items-start gap-3">
+                <div
+                  className="size-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs"
+                  style={{ backgroundColor: card.badge, color: card.ink }}
+                >
+                  {card.icon}
+                </div>
+                <div className="min-w-0">
+                  <p
+                    className="text-xs font-black tracking-wide uppercase mb-1 leading-snug"
+                    style={{ color: card.ink }}
+                  >
+                    {card.title}
+                  </p>
+                  <p className="text-xs leading-relaxed text-slate-700 font-medium">
+                    {card.body}
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+
+      {/* Desktop / Tablet Scaled Node Network (screens >= 768px) */}
+      <div
+        ref={frameRef}
+        className="hidden md:block diagram-frame"
+        style={{ "--diagram-scale": scale } as React.CSSProperties}
+        role="img"
+        aria-label="Participation Benefits — seven benefits of taking part in SEWA FIRST RYIC 2026"
+      >
+        <div className="diagram-stage">
+          {/* Connector network, drawn under the cards */}
+          <svg
+            className="absolute inset-0 w-full h-full pointer-events-none z-10"
+            fill="none"
+            viewBox="0 0 1200 680"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
           >
-            <div
-              className="icon-badge badge-shadow"
-              style={{ backgroundColor: card.badge, color: card.ink }}
-            >
-              {card.icon}
+            {connectors.map((c, i) => (
+              <g key={i}>
+                <path
+                  d={c.d}
+                  stroke={c.color}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.5"
+                />
+                {c.dots.map(([cx, cy], j) => (
+                  <circle key={j} cx={cx} cy={cy} r="4.5" fill={c.color} />
+                ))}
+              </g>
+            ))}
+          </svg>
+
+          {/* Central label card */}
+          <div
+            className="absolute z-20 bg-white rounded-2xl p-6 px-8 soft-card-shadow border border-slate-100 flex flex-col justify-center"
+            style={{ left: 95, top: 295, width: 400, height: 132 }}
+          >
+            <p className="text-3xl font-extrabold tracking-tight text-slate-800 text-left">
+              Participation <span className="text-[#0e3b43]">Benefits</span>
+            </p>
+
+            <div className="flex h-[3px] w-full rounded-full overflow-hidden mt-3 mb-3 bg-slate-200">
+              <div className="w-[32%] bg-[#e58a2d]" />
+              <div className="w-[28%] bg-[#4fa77f]" />
+              <div className="w-[40%] bg-[#0e3b43]" />
             </div>
-            <p
-              className="text-xs font-black tracking-wide uppercase mb-1.5 leading-snug text-left"
-              style={{ color: card.ink, textAlign: card.centered ? "center" : "left" }}
+
+            <div className="text-[11px] font-bold text-slate-700 tracking-wider flex items-center justify-between uppercase">
+              <span>Learn</span>
+              <span className="text-slate-300 font-normal">|</span>
+              <span>Connect</span>
+              <span className="text-slate-300 font-normal">|</span>
+              <span>Create</span>
+              <span className="text-slate-300 font-normal">|</span>
+              <span>Make an Impact</span>
+            </div>
+          </div>
+
+          {/* Benefit cards */}
+          {cards.map((card) => (
+            <article
+              key={card.id}
+              className={`absolute z-20 rounded-2xl p-5 pt-8 soft-card-shadow transition-transform hover:-translate-y-0.5 ${card.centered ? "text-center" : ""}`}
+              style={{
+                left: card.left,
+                top: card.top,
+                width: card.width,
+                minHeight: card.minHeight,
+                backgroundColor: card.surface,
+              }}
             >
-              {card.title}
-            </p>
-            <p className="text-[11.5px] leading-relaxed text-slate-700 font-medium text-left">
-              {card.body}
-            </p>
-          </article>
-        ))}
+              <div
+                className="icon-badge badge-shadow"
+                style={{ backgroundColor: card.badge, color: card.ink }}
+              >
+                {card.icon}
+              </div>
+              <p
+                className="text-xs font-black tracking-wide uppercase mb-1.5 leading-snug text-left"
+                style={{ color: card.ink, textAlign: card.centered ? "center" : "left" }}
+              >
+                {card.title}
+              </p>
+              <p className="text-[11.5px] leading-relaxed text-slate-700 font-medium text-left">
+                {card.body}
+              </p>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   );
