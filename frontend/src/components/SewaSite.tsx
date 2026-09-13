@@ -1686,7 +1686,9 @@ export function HomePage() {
             <h2 className="t-subheading-1 uppercase text-[#172554]">
               What
               <br />
-              <span className="text-[#172554]">is SEWA FIRST</span>
+              <span className="text-[#172554]">
+                is <span className="!text-[#ff4d4f]">SEWA</span> FIRST
+              </span>
               <br />
               <span className="t-subheading-2 text-muted-foreground block mt-1 uppercase">Rashtriya Youth Innovation Challenge 2026?</span>
             </h2>
