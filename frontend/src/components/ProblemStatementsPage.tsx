@@ -88,7 +88,7 @@ function CategoryTable({ categories }: { categories: Category[] }) {
               >
                 {category.numeral}
               </span>
-              <p className="t-content border-l border-gray-300/70 pl-4 sm:pl-6 font-medium! text-gray-900">
+              <p className="t-content border-l border-gray-300/70 pl-4 sm:pl-6 font-medium! text-gray-900 text-left [hyphens:none]">
                 <span className="sr-only">Category {category.numeral}: </span>
                 {category.label}
               </p>

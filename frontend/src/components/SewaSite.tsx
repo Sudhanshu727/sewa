@@ -1684,13 +1684,19 @@ export function HomePage() {
           <div className="site-shell grid grid-cols-1 lg:grid-cols-4 gap-10 lg:gap-16 items-start">
             {/* Heading */}
             <h2 className="t-subheading-1 uppercase text-[#172554]">
-              What
-              <br />
-              <span className="text-[#172554]">
-                is <span className="!text-[#ff4d4f]">SEWA</span> FIRST
+              <span className="inline lg:hidden">
+                What is <span className="!text-[#ff4d4f]">SEWA</span> FIRST
               </span>
-              <br />
-              <span className="t-subheading-2 text-muted-foreground block mt-1 uppercase">Rashtriya Youth Innovation Challenge 2026?</span>
+              <span className="hidden lg:inline">
+                What
+                <br />
+                <span className="text-[#172554]">
+                  is <span className="!text-[#ff4d4f]">SEWA</span> FIRST
+                </span>
+              </span>
+              <span className="t-subheading-2 text-muted-foreground block mt-1 uppercase">
+                Rashtriya Youth Innovation Challenge 2026?
+              </span>
             </h2>
 
             {/* Description spans remaining 3 columns */}
@@ -2873,8 +2879,8 @@ export function EventsPage() {
               <span className="text-xs sm:text-[13px] font-bold tracking-[0.2em] text-[#ff3b30] uppercase">
                 NATIONAL LAUNCH EVENT
               </span>
-              <h2 className="mt-3 text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-[#172554] tracking-tight leading-[1.14] uppercase">
-                Kickstarting SEWA 2026<br />At Delhi Technological<br />University
+              <h2 className="mt-3 text-2xl sm:text-4xl lg:text-[44px] font-extrabold text-[#172554] tracking-tight leading-[1.14] uppercase">
+                Kickstarting SEWA 2026 <br className="hidden sm:inline" />At Delhi Technological University
               </h2>
               <p className="t-content mt-5 text-gray-600">
                 Join us on 19 September 2026 for the grand inaugural ceremony and National Innovation
@@ -2902,8 +2908,8 @@ export function EventsPage() {
                 <span className="text-xs sm:text-[13px] font-bold tracking-[0.2em] text-[#ff3b30] uppercase">
                   COMPETITION ROADMAP
                 </span>
-                <h2 className="mt-3 text-3xl sm:text-4xl lg:text-[44px] font-extrabold text-[#172554] tracking-tight leading-[1.14] uppercase">
-                  The 100-Day<br />Innovation Journey
+                <h2 className="mt-3 text-2xl sm:text-4xl lg:text-[44px] font-extrabold text-[#172554] tracking-tight leading-[1.14] uppercase">
+                  The 100-Day <br className="hidden sm:inline" />Innovation Journey
                 </h2>
                 <p className="t-content mt-5 text-gray-600">
                   Following the national launch, participants embark on a rigorous, milestone-driven

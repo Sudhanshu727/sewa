@@ -235,13 +235,13 @@ export function ParticipationBenefits() {
           </div>
 
           <div className="text-[9.5px] sm:text-[10.5px] font-bold text-slate-600 tracking-wider flex items-center justify-center gap-1.5 uppercase flex-wrap">
-            <span>Learn</span>
+            <span className="whitespace-nowrap">Learn</span>
             <span className="text-slate-300 font-normal">•</span>
-            <span>Connect</span>
+            <span className="whitespace-nowrap">Connect</span>
             <span className="text-slate-300 font-normal">•</span>
-            <span>Create</span>
+            <span className="whitespace-nowrap">Create</span>
             <span className="text-slate-300 font-normal">•</span>
-            <span>Make an Impact</span>
+            <span className="whitespace-nowrap">Make an Impact</span>
           </div>
         </div>
 
@@ -262,14 +262,14 @@ export function ParticipationBenefits() {
                     {card.icon}
                   </div>
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <p
-                    className="text-[11px] font-bold tracking-wide uppercase mb-0.5 leading-tight"
+                    className="text-[11px] font-bold tracking-wide uppercase mb-0.5 leading-tight [hyphens:none]"
                     style={{ color: card.ink }}
                   >
                     {card.title}
                   </p>
-                  <p className="text-[11px] leading-snug text-slate-600 font-normal">
+                  <p className="text-[11px] leading-snug text-slate-600 font-normal [hyphens:none]">
                     {card.body}
                   </p>
                 </div>

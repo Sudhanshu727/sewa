@@ -199,9 +199,7 @@ export function AdditionalResourcesPage() {
             {/* ── Technology Readiness Level (TRL) ── */}
             <section id="trl" aria-labelledby="trl-heading" className="scroll-mt-28">
               <h2 id="trl-heading" className={sectionHeadingClass}>
-                Technology Readiness
-                <br />
-                Level (TRL)
+                Technology Readiness <br className="hidden sm:inline" />Level (TRL)
               </h2>
 
               <div className="mt-10 sm:mt-12 overflow-hidden rounded-2xl border border-[#eaecf0]">

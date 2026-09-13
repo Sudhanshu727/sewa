@@ -262,13 +262,13 @@ export function ObjectivesRoadmap() {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xs font-bold text-[#172554] tracking-tight leading-snug">
+                <h3 className="text-xs font-bold text-[#172554] tracking-tight leading-snug min-w-0 flex-1 [hyphens:none]">
                   {item.title}
                 </h3>
               </div>
 
               {/* Body */}
-              <p className="text-[11px] text-slate-600 leading-snug pl-0.5">
+              <p className="text-[11px] text-slate-600 leading-snug pl-0.5 [hyphens:none]">
                 {item.body}
               </p>
             </div>

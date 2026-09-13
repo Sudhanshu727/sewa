@@ -282,25 +282,25 @@ export function TimelineRoadmap() {
                 <div className="rounded-xl bg-[#fbfbfc] border border-slate-200/80 p-3 sm:p-3.5 shadow-2xs">
                   <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                     <span
-                      className="text-xs sm:text-sm font-bold uppercase tracking-tight"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-tight [hyphens:none]"
                       style={{ color: step.color }}
                     >
                       {step.title}
                     </span>
                     {dayRange && (
-                      <span className="text-[9.5px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                      <span className="text-[9.5px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md whitespace-nowrap">
                         {dayRange}
                       </span>
                     )}
                   </div>
 
                   {dateSpan && (
-                    <div className="text-[10.5px] font-medium text-slate-600 mb-1.5">
+                    <div className="text-[10.5px] font-medium text-slate-600 mb-1.5 [hyphens:none]">
                       {dateSpan}
                     </div>
                   )}
 
-                  <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-normal">
+                  <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-normal [hyphens:none]">
                     {step.body}
                   </p>
                 </div>

@@ -187,17 +187,30 @@
   h6 {
     color: #172554;
     letter-spacing: 0;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: break-word;
+    text-wrap: balance;
   }
 
   /*
-   * Body copy is justified site-wide. Tailwind's text-* alignment utilities
-   * sit in a later cascade layer, so `text-center` / `text-right` still win
-   * wherever they are applied.
+   * Body copy: Prevent words from breaking in between with hyphens.
+   * On mobile screens (<640px), align left to eliminate rivers and unnatural word spacing.
    */
   p {
     text-align: justify;
     text-justify: inter-word;
-    hyphens: auto;
+    hyphens: none;
+    word-break: normal;
+    overflow-wrap: break-word;
+  }
+
+  @media (max-width: 640px) {
+    p {
+      text-align: left;
+      text-justify: auto;
+      hyphens: none;
+    }
   }
 
   button,
