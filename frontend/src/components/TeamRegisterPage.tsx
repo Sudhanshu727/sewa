@@ -323,7 +323,7 @@ function DossierSidebar({ step }: { step: WizardStep }) {
   return (
     <aside className="no-print w-full shrink-0 border-b border-gray-100 px-5 py-6 sm:w-[230px] sm:border-b-0 sm:border-r">
       <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400">SEWA 2026</p>
-      <h2 className="mb-6 text-sm font-extrabold text-gray-900">Registration Dossier</h2>
+      <h2 className="mb-6 text-sm font-extrabold text-[#172554]">Registration Dossier</h2>
 
       <ol className="space-y-5">
         {WIZARD_STEPS.map((s) => {
@@ -430,7 +430,7 @@ function ConfirmationSummary({
         <p className="text-xs font-bold uppercase tracking-widest text-primary">
           SEWA 2026 · Registration Confirmation
         </p>
-        <h2 className="mt-1 text-xl font-extrabold text-gray-900">{teamName || "Untitled Team"}</h2>
+        <h2 className="mt-1 text-xl font-extrabold text-[#172554]">{teamName || "Untitled Team"}</h2>
         <p className="mt-1 text-xs text-gray-400">{institute}</p>
         {teamId && (
           <p className="mt-2 text-xs text-gray-500">
@@ -823,7 +823,7 @@ export function TeamRegisterPage() {
             <div className="mx-auto flex size-16 items-center justify-center rounded-full bg-primary/10">
               <CheckCircle2 className="size-8 text-primary" />
             </div>
-            <h1 className="mt-4 text-2xl font-extrabold text-gray-900">{copy.title}</h1>
+            <h1 className="mt-4 text-2xl font-extrabold text-[#172554]">{copy.title}</h1>
             <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-gray-500">
               {copy.body}
             </p>
@@ -883,7 +883,7 @@ export function TeamRegisterPage() {
           <p className="mb-1 text-xs font-bold uppercase tracking-widest text-primary">
             SEWA 2026 · DTU Youth Innovation Challenge
           </p>
-          <h1 className="text-3xl font-extrabold tracking-tight text-gray-900 sm:text-4xl">
+          <h1 className="text-3xl font-extrabold tracking-tight text-[#172554] sm:text-4xl">
             Team Registration
           </h1>
           <p className="mt-2 text-sm text-gray-500">
@@ -1329,7 +1329,7 @@ export function TeamRegisterPage() {
             {/* ── STEP 4: Review & Confirmation ── */}
             {step === 4 && (
               <div className="space-y-6 px-6 py-8 sm:px-8">
-                <h2 className="text-lg font-bold text-gray-900">Review &amp; Confirm</h2>
+                <h2 className="text-lg font-bold text-[#172554]">Review &amp; Confirm</h2>
                 <ConfirmationSummary
                   personal={personal}
                   email={user?.email ?? ""}
@@ -1387,7 +1387,7 @@ export function TeamRegisterPage() {
                   <div className="mx-auto flex size-14 items-center justify-center rounded-full bg-emerald-50">
                     <CheckCircle2 className="size-7 text-emerald-500" />
                   </div>
-                  <h2 className="mt-3 text-xl font-extrabold text-gray-900">Team Registered!</h2>
+                  <h2 className="mt-3 text-xl font-extrabold text-[#172554]">Team Registered!</h2>
                   <p className="mx-auto mt-1 max-w-sm text-sm text-gray-500">
                     <span className="font-semibold text-gray-800">{teamName}</span> has been
                     successfully registered for SEWA 2026. Wait for further rounds - we'll notify

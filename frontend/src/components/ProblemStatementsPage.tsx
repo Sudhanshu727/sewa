@@ -112,7 +112,7 @@ export function ProblemStatementsPage() {
 
         <main className="pt-10 sm:pt-16 pb-20 sm:pb-28">
           <div className="site-shell max-w-5xl">
-            <h1 className="t-main-heading uppercase text-primary">
+            <h1 className="t-main-heading uppercase text-[#172554]">
               Problem Statements
             </h1>
             <p className="t-content mx-auto mt-5 sm:mt-6 max-w-2xl text-center text-gray-500">
@@ -133,7 +133,7 @@ export function ProblemStatementsPage() {
                   </p>
                   <h2
                     id={`${theme.id}-heading`}
-                    className="mt-2 text-2xl sm:text-3xl md:text-[34px] font-black leading-tight tracking-tight text-gray-950"
+                    className="mt-2 text-2xl sm:text-3xl md:text-[34px] font-black leading-tight tracking-tight text-[#172554]"
                   >
                     {theme.title}
                   </h2>

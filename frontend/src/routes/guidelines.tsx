@@ -64,7 +64,7 @@ const eligibilityDetails = [
   },
 ];
 
-const sectionHeadingClass = "t-main-heading uppercase text-[#ff6668]";
+const sectionHeadingClass = "t-main-heading uppercase text-[#172554]";
 
 function GuidelinesPage() {
   return (
@@ -103,7 +103,7 @@ function GuidelinesPage() {
                   {detail.number === "IV" ? <UsersRound size={21} strokeWidth={2.4} /> : detail.number === "V" ? <FileText size={21} strokeWidth={2.4} /> : <MapPin size={21} strokeWidth={2.4} />}
                 </span>
                 <div className="min-w-0 border-l border-[#dce3ef] pl-5 sm:pl-6">
-                  <h3 className={`text-base font-extrabold ${detail.number === "VI" ? "text-[#e12d43]" : detail.number === "V" ? "text-[#087346]" : "text-[#15213a]"}`}>{detail.category}</h3>
+                  <h3 className={`text-base font-extrabold ${detail.number === "VI" ? "text-[#e12d43]" : detail.number === "V" ? "text-[#087346]" : "text-[#172554]"}`}>{detail.category}</h3>
                   <p className="mt-1 text-sm leading-[1.45] text-[#465875]">{detail.participants}</p>
                 </div>
               </article>
@@ -125,7 +125,7 @@ function GuidelinesPage() {
         <section aria-labelledby="submission-heading">
           <h2 id="submission-heading" className={sectionHeadingClass}>Submission format</h2>
           <p className="t-content w-full text-justify text-black">Participants are required to submit their innovation proposal in the prescribed 15-slide presentation format. The presentation should be concise, structured and focused on demonstrating the journey from problem identification to innovation, prototype development and potential impact. The prescribed slide format is appended for reference</p>
-          <div className="mt-12 grid gap-8 text-base font-bold text-black sm:grid-cols-2 sm:gap-12 sm:pt-4">
+          <div className="mt-12 grid gap-8 text-base font-bold text-[#172554] sm:grid-cols-2 sm:gap-12 sm:pt-4">
             <h3>PPT FOR NATIONAL THEME</h3>
             <h3>PPT FOR REGIONAL THEME</h3>
           </div>
