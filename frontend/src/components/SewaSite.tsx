@@ -1630,49 +1630,49 @@ export function HomePage() {
             type="button"
             aria-label="Previous slide"
             onClick={prevSlide}
-            className="flex absolute left-3 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 text-white/80 hover:text-white hover:scale-110 active:scale-95 transition-all cursor-pointer select-none bg-white/20 hover:bg-white/40 backdrop-blur-xs p-1.5 sm:p-2 rounded-full shadow-xs"
+            className="flex absolute left-2 sm:left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 text-white/80 hover:text-white hover:scale-110 active:scale-95 transition-all cursor-pointer select-none bg-white/20 hover:bg-white/40 backdrop-blur-xs p-1 sm:p-2 rounded-full shadow-xs"
           >
-            <ChevronLeft size={36} strokeWidth={2.5} className="sm:size-[42px]" />
+            <ChevronLeft size={22} strokeWidth={2.5} className="sm:size-[36px]" />
           </button>
           <button
             type="button"
             aria-label="Next slide"
             onClick={nextSlide}
-            className="flex absolute right-3 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 text-white/80 hover:text-white hover:scale-110 active:scale-95 transition-all cursor-pointer select-none bg-white/20 hover:bg-white/40 backdrop-blur-xs p-1.5 sm:p-2 rounded-full shadow-xs"
+            className="flex absolute right-2 sm:right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 text-white/80 hover:text-white hover:scale-110 active:scale-95 transition-all cursor-pointer select-none bg-white/20 hover:bg-white/40 backdrop-blur-xs p-1 sm:p-2 rounded-full shadow-xs"
           >
-            <ChevronRight size={36} strokeWidth={2.5} className="sm:size-[42px]" />
+            <ChevronRight size={22} strokeWidth={2.5} className="sm:size-[36px]" />
           </button>
 
           {/* Hero content - centered */}
-          <div className="site-shell relative flex min-h-[580px] items-start justify-center z-10">
-            <div className="animate-rise flex flex-col items-center text-center pt-10 pb-20 max-w-3xl w-full">
+          <div className="site-shell relative flex min-h-[460px] sm:min-h-[560px] items-start justify-center z-10">
+            <div className="animate-rise flex flex-col items-center text-center pt-2 sm:pt-8 pb-20 sm:pb-24 max-w-3xl w-full px-2">
 
               {/* SEWA white logo in hero */}
-              <div className="mb-6 select-none drop-shadow-xl">
+              <div className="mb-2.5 sm:mb-5 select-none drop-shadow-md">
                 <img
                   src={sewaWhiteLogo}
                   alt="SEWA First"
-                  className="h-28 sm:h-32 md:h-36 w-auto object-contain"
+                  className="h-16 sm:h-26 md:h-34 w-auto object-contain"
                 />
               </div>
 
-              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-extrabold leading-tight !text-white uppercase tracking-tight">
+              <h1 className="text-base sm:text-2xl md:text-3xl lg:text-4xl font-extrabold leading-snug !text-white uppercase tracking-tight max-w-xl">
                 Rashtriya Youth Innovation Challenge 2026
               </h1>
 
-              <p className="mt-3 sm:mt-4 text-base sm:text-2xl md:text-3xl font-black !text-white tracking-wider uppercase">
+              <p className="mt-1.5 sm:mt-2.5 text-xs sm:text-lg md:text-xl font-black !text-white/95 tracking-wider uppercase">
                 Observe. Ideate. Innovate. Impact.
               </p>
 
-              <p className="mt-5 max-w-2xl text-base sm:text-lg leading-7 font-medium !text-white/95">
-                Young India's Knowledge &amp; Technology Initiative - A 100-Day Innovation Journey empowering students, researchers, and startups to build sustainable working prototypes for Viksit Bharat.
+              <p className="mt-2.5 sm:mt-3.5 max-w-lg text-[11.5px] sm:text-sm md:text-base leading-relaxed font-normal !text-white/85 px-2">
+                Young India&apos;s Knowledge &amp; Technology Initiative — A 100-Day Innovation Journey empowering youth to build sustainable working prototypes for Viksit Bharat.
               </p>
 
-              <div className="mt-8 flex flex-wrap gap-3 justify-center">
-                <Link to="/signup" className="inline-flex items-center gap-2 rounded-md bg-[#e53e3e] hover:bg-[#c53030] px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-lg">
+              <div className="mt-4 sm:mt-6 flex flex-wrap gap-2.5 sm:gap-3 justify-center">
+                <Link to="/signup" className="inline-flex items-center gap-1.5 rounded-lg bg-[#e53e3e] hover:bg-[#c53030] px-4.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-md">
                   Register Your Team
                 </Link>
-                <a href="#about" className="inline-flex items-center gap-2 rounded-md bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-sm px-6 py-3 text-sm font-bold text-white transition-all hover:-translate-y-0.5">
+                <a href="#about" className="inline-flex items-center gap-1.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-xs px-4.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all hover:-translate-y-0.5">
                   Latest Updates
                 </a>
               </div>
@@ -1934,14 +1934,14 @@ export function HomePage() {
             </h2>
 
             {/* 4 columns x 3 rows grid of 12 circular members */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 sm:gap-x-12 md:gap-x-16 gap-y-10 sm:gap-y-12 md:gap-y-16 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 sm:gap-x-12 md:gap-x-16 gap-y-6 sm:gap-y-12 md:gap-y-16 max-w-4xl mx-auto">
               {Array.from({ length: 12 }).map((_, idx) => (
                 <div key={idx} className="flex flex-col items-center text-center">
-                  <div className="size-20 sm:size-24 md:size-28 rounded-full bg-[#d2d2d2] mb-3 sm:mb-3.5 transition-transform duration-200 hover:scale-105" />
-                  <h3 className="t-subheading-2 text-[#172554]">
+                  <div className="size-16 sm:size-24 md:size-28 rounded-full bg-[#d2d2d2] mb-2 sm:mb-3.5 transition-transform duration-200 hover:scale-105" />
+                  <h3 className="text-xs sm:text-base font-bold text-[#172554]">
                     Name
                   </h3>
-                  <p className="t-content text-gray-500 mt-1">
+                  <p className="text-[11px] sm:text-sm text-gray-500 mt-0.5">
                     Designation
                   </p>
                 </div>

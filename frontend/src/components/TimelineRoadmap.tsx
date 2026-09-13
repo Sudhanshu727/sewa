@@ -259,8 +259,8 @@ export function TimelineRoadmap() {
   return (
     <div className="w-full">
       {/* Mobile-Friendly Vertical Stepper Timeline (screens < 768px) */}
-      <div className="block md:hidden py-3 px-1">
-        <div className="relative border-l-2 border-slate-200 ml-4 space-y-5 sm:space-y-6 pl-5 sm:pl-6">
+      <div className="block md:hidden py-2 px-1">
+        <div className="relative border-l-2 border-slate-200 ml-3.5 space-y-4 pl-4 sm:pl-5">
           {steps.map((step) => {
             const dateParts = step.dates.split("•");
             const dayRange = dateParts[0]?.trim();
@@ -270,37 +270,37 @@ export function TimelineRoadmap() {
               <div key={step.number} className="relative">
                 {/* Node circle on the vertical spine */}
                 <div
-                  className="absolute -left-[31px] top-1.5 size-7 rounded-full flex items-center justify-center shadow-xs ring-4 ring-white"
+                  className="absolute -left-[27px] top-1 size-6 rounded-full flex items-center justify-center shadow-xs ring-3 ring-white"
                   style={{ backgroundColor: step.color }}
                 >
-                  <span className="text-white text-[10px] font-black leading-none">
+                  <span className="text-white text-[9px] font-black leading-none">
                     {step.number}
                   </span>
                 </div>
 
                 {/* Step Card */}
-                <div className="rounded-2xl bg-[#fbfbfc] border border-slate-200/80 p-4 shadow-2xs">
+                <div className="rounded-xl bg-[#fbfbfc] border border-slate-200/80 p-3 sm:p-3.5 shadow-2xs">
                   <div className="flex items-center justify-between gap-2 flex-wrap mb-1">
                     <span
-                      className="text-sm font-black uppercase tracking-tight"
+                      className="text-xs sm:text-sm font-bold uppercase tracking-tight"
                       style={{ color: step.color }}
                     >
                       {step.title}
                     </span>
                     {dayRange && (
-                      <span className="text-[10px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                      <span className="text-[9.5px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
                         {dayRange}
                       </span>
                     )}
                   </div>
 
                   {dateSpan && (
-                    <div className="text-[11px] font-semibold text-slate-700 mb-2">
+                    <div className="text-[10.5px] font-medium text-slate-600 mb-1.5">
                       {dateSpan}
                     </div>
                   )}
 
-                  <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                  <p className="text-[11px] sm:text-xs text-slate-600 leading-relaxed font-normal">
                     {step.body}
                   </p>
                 </div>

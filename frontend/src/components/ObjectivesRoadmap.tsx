@@ -229,18 +229,18 @@ export function ObjectivesRoadmap() {
   return (
     <div className="w-full">
       {/* Mobile-Friendly Full-Width Stack (screens < 640px) */}
-      <div className="block sm:hidden space-y-3 px-1">
+      <div className="block sm:hidden space-y-2.5 px-1">
         {objectives.map((item, i) => (
           <Fragment key={`m-${item.number}`}>
-            <div className="roadmap-card p-4 bg-white shadow-2xs">
-              <div className="flex items-center gap-2.5 mb-2">
+            <div className="roadmap-card p-3 sm:p-3.5 bg-white shadow-2xs">
+              <div className="flex items-center gap-2 mb-1.5">
                 {/* Number badge */}
                 <div
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full"
+                  className="flex size-7.5 shrink-0 items-center justify-center rounded-full"
                   style={{ backgroundColor: item.numberBg }}
                 >
                   <span
-                    className="font-bold tracking-tight text-xs"
+                    className="font-bold tracking-tight text-[10.5px]"
                     style={{ color: item.ink }}
                   >
                     {item.number}
@@ -249,26 +249,26 @@ export function ObjectivesRoadmap() {
 
                 {/* Icon badge */}
                 <div
-                  className="flex size-9 shrink-0 items-center justify-center rounded-full border"
+                  className="flex size-7.5 shrink-0 items-center justify-center rounded-full border"
                   style={{
                     backgroundColor: item.iconBg,
                     borderColor: item.numberBg,
                     color: item.ink,
                   }}
                 >
-                  <div className="scale-75 origin-center">
+                  <div className="scale-65 origin-center">
                     {item.icon}
                   </div>
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xs sm:text-sm font-bold text-[#172554] tracking-tight leading-snug">
+                <h3 className="text-xs font-bold text-[#172554] tracking-tight leading-snug">
                   {item.title}
                 </h3>
               </div>
 
               {/* Body */}
-              <p className="text-xs text-slate-600 leading-relaxed pl-0.5">
+              <p className="text-[11px] text-slate-600 leading-snug pl-0.5">
                 {item.body}
               </p>
             </div>

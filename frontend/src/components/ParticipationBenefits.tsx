@@ -221,20 +221,20 @@ export function ParticipationBenefits() {
   return (
     <div className="w-full">
       {/* Mobile-Friendly Grid View (screens < 768px) */}
-      <div className="block md:hidden space-y-4 px-1 py-2">
+      <div className="block md:hidden space-y-3 px-1 py-1">
         {/* Central label card on mobile */}
-        <div className="rounded-2xl bg-white p-5 soft-card-shadow border border-slate-100 text-center">
-          <p className="text-xl font-extrabold tracking-tight text-slate-800">
+        <div className="rounded-xl bg-white p-3.5 soft-card-shadow border border-slate-100 text-center">
+          <p className="text-base sm:text-lg font-extrabold tracking-tight text-slate-800">
             Participation <span className="text-[#0e3b43]">Benefits</span>
           </p>
 
-          <div className="flex h-[3px] w-full rounded-full overflow-hidden my-3 bg-slate-200">
+          <div className="flex h-[2.5px] w-full rounded-full overflow-hidden my-2.5 bg-slate-200">
             <div className="w-[32%] bg-[#e58a2d]" />
             <div className="w-[28%] bg-[#4fa77f]" />
             <div className="w-[40%] bg-[#0e3b43]" />
           </div>
 
-          <div className="text-[10px] sm:text-[11px] font-bold text-slate-700 tracking-wider flex items-center justify-center gap-2 uppercase flex-wrap">
+          <div className="text-[9.5px] sm:text-[10.5px] font-bold text-slate-600 tracking-wider flex items-center justify-center gap-1.5 uppercase flex-wrap">
             <span>Learn</span>
             <span className="text-slate-300 font-normal">•</span>
             <span>Connect</span>
@@ -245,29 +245,31 @@ export function ParticipationBenefits() {
           </div>
         </div>
 
-        {/* 7 Benefit Cards in a clean, readable mobile grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+        {/* 7 Benefit Cards in a compact, readable mobile grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
           {cards.map((card) => (
             <article
               key={card.id}
-              className="rounded-2xl p-4.5 soft-card-shadow transition-all"
+              className="rounded-xl p-3 soft-card-shadow transition-all"
               style={{ backgroundColor: card.surface }}
             >
-              <div className="flex items-start gap-3">
+              <div className="flex items-start gap-2.5">
                 <div
-                  className="size-10 rounded-xl flex items-center justify-center shrink-0 shadow-2xs"
+                  className="size-8 rounded-lg flex items-center justify-center shrink-0 shadow-2xs"
                   style={{ backgroundColor: card.badge, color: card.ink }}
                 >
-                  {card.icon}
+                  <div className="scale-75 origin-center">
+                    {card.icon}
+                  </div>
                 </div>
                 <div className="min-w-0">
                   <p
-                    className="text-xs font-black tracking-wide uppercase mb-1 leading-snug"
+                    className="text-[11px] font-bold tracking-wide uppercase mb-0.5 leading-tight"
                     style={{ color: card.ink }}
                   >
                     {card.title}
                   </p>
-                  <p className="text-xs leading-relaxed text-slate-700 font-medium">
+                  <p className="text-[11px] leading-snug text-slate-600 font-normal">
                     {card.body}
                   </p>
                 </div>

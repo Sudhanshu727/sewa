@@ -9,22 +9,22 @@
   --heading-color: #172554;
 
   /* MAIN HEADING — the big section titles. */
-  --main-heading-min: 52;
-  --main-heading-max: 96;
-  --main-heading-leading: 0.95;
-  --main-heading-weight: 600;
-  --main-heading-tracking: -0.02em;
+  --main-heading-min: 34;
+  --main-heading-max: 82;
+  --main-heading-leading: 1.05;
+  --main-heading-weight: 700;
+  --main-heading-tracking: -0.015em;
 
   /* SUBHEADING 1 */
-  --subheading-1-min: 34;
-  --subheading-1-max: 40;
+  --subheading-1-min: 24;
+  --subheading-1-max: 36;
   --subheading-1-leading: 1.15;
   --subheading-1-weight: 800;
   --subheading-1-tracking: -0.01em;
 
   /* SUBHEADING 2 */
-  --subheading-2-min: 26;
-  --subheading-2-max: 26;
+  --subheading-2-min: 17;
+  --subheading-2-max: 23;
   --subheading-2-leading: 1.25;
   --subheading-2-weight: 700;
   --subheading-2-tracking: -0.005em;
@@ -32,15 +32,15 @@
   /* SPACING — vertical rhythm, in the same pixel-style numbers.
      --section-gap  = the gap between one section and the next.
      --title-gap    = the gap between a heading and the content under it. */
-  --section-gap: 90;
-  --title-gap: 50;
+  --section-gap: 68;
+  --title-gap: 34;
   /* Opt-in wider heading gap, via .t-title-gap-wide on the heading. */
-  --title-gap-wide: 110;
+  --title-gap-wide: 72;
 
   /* CONTENT — body copy, paragraphs, list text. */
-  --content-min: 19;
-  --content-max: 21;
-  --content-leading: 1.7;
+  --content-min: 14;
+  --content-max: 18;
+  --content-leading: 1.65;
   --content-weight: 400;
   --content-tracking: 0;
   
