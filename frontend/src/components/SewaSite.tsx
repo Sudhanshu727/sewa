@@ -20,6 +20,7 @@ import {
   Mail,
   Map,
   MapPin,
+  Menu,
   Phone,
   Play,
   Rocket,
@@ -117,6 +118,7 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
   const { user, isSignedIn, signOut } = useAuth();
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -126,6 +128,16 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  // Lock body scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [mobileMenuOpen]);
 
   // Global Ctrl+K / Cmd+K shortcut to open search
   useEffect(() => {
@@ -145,19 +157,19 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
       <div className="w-full bg-[#F3F4F6] border-b border-gray-200/50 px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3 flex items-center justify-between">
         <Brand />
         <div className="flex items-center gap-2.5 sm:gap-4 md:gap-5">
-          {/* dtu.ac.in link */}
+          {/* dtu.ac.in link - hidden on mobile to save space */}
           <a
             href="https://dtu.ac.in"
             target="_blank"
             rel="noreferrer"
-            className="flex items-center gap-1.5 text-[#ff4d4f] font-semibold text-xs sm:text-sm underline underline-offset-2 hover:opacity-80 transition-opacity"
+            className="hidden sm:flex items-center gap-1.5 text-[#ff4d4f] font-semibold text-xs sm:text-sm underline underline-offset-2 hover:opacity-80 transition-opacity"
           >
             <span>dtu.ac.in</span>
             <ExternalLink size={14} className="stroke-[2.2]" />
           </a>
 
-          {/* Social icons */}
-          <div className="flex items-center gap-2 sm:gap-2.5 text-[#ff4d4f]">
+          {/* Social icons - hidden on mobile, visible on sm+ */}
+          <div className="hidden sm:flex items-center gap-2 sm:gap-2.5 text-[#ff4d4f]">
             <a href="https://facebook.com" target="_blank" rel="noreferrer" aria-label="Facebook" className="hover:opacity-80 transition-opacity">
               <Facebook size={16} fill="currentColor" strokeWidth={0} />
             </a>
@@ -206,24 +218,34 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
           ) : (
             <Link
               to="/signin"
-              className="inline-flex items-center justify-center rounded-full bg-[#ff4d4f] px-5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#e03d3f] transition-colors sm:px-6 sm:py-2 sm:text-sm"
+              className="hidden sm:inline-flex items-center justify-center rounded-full bg-[#ff4d4f] px-5 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-[#e03d3f] transition-colors sm:px-6 sm:py-2 sm:text-sm"
             >
               Login
             </Link>
           )}
+
+          {/* Hamburger menu button - visible only on mobile (below lg) */}
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="lg:hidden flex items-center justify-center size-9 rounded-full bg-white hover:bg-gray-50 text-gray-700 border border-gray-200/90 shadow-2xs transition-all cursor-pointer"
+            aria-label="Open navigation menu"
+          >
+            <Menu size={18} strokeWidth={2.2} />
+          </button>
         </div>
       </div>
 
-      {/* Row 2: Sticky navigation bar that transforms on scroll with increased height */}
+      {/* Row 2: Sticky navigation bar - desktop only when not scrolled, all screens when scrolled */}
       <header
         className={`sticky top-0 z-50 bg-white border-b border-gray-200/80 transition-all duration-300 ${!isScrolled
             ? "hidden lg:block shadow-sm py-2.5 sm:py-3"
-            : "block shadow-md py-3.5 sm:py-4 min-h-[64px] sm:min-h-[72px]"
+            : "block shadow-md py-2.5 sm:py-3.5 lg:py-4 min-h-[56px] sm:min-h-[64px] lg:min-h-[72px]"
           }`}
       >
         <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Left slot: SEWA FIRST Logo (appears on scroll like the screenshot) */}
-          <div className="flex items-center min-w-[140px] sm:min-w-[185px]">
+          <div className="flex items-center min-w-0 sm:min-w-[140px] lg:min-w-[185px]">
             <Link
               to="/"
               className={`flex items-center transition-all duration-300 ${isScrolled ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-3 pointer-events-none"
@@ -233,7 +255,7 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
               <img
                 src={sewaLogo}
                 alt="SEWA FIRST"
-                className="h-11 sm:h-13 md:h-14 w-auto object-contain shrink-0"
+                className="h-9 sm:h-11 md:h-13 lg:h-14 w-auto object-contain shrink-0"
               />
             </Link>
           </div>
@@ -313,7 +335,7 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
           </nav>
 
           {/* Right slot: Search & Login button (appears on scroll) */}
-          <div className="flex items-center justify-end min-w-[140px] sm:min-w-[185px]">
+          <div className="flex items-center justify-end min-w-0 sm:min-w-[140px] lg:min-w-[185px]">
             <div
               className={`flex items-center gap-2 sm:gap-3 transition-all duration-300 ${isScrolled ? "opacity-100 translate-x-0" : "opacity-0 translate-x-3 pointer-events-none"
                 }`}
@@ -348,11 +370,21 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
               ) : (
                 <Link
                   to="/signin"
-                  className="inline-flex items-center justify-center rounded-full bg-[#ff4d4f] px-4 sm:px-5 py-1.5 sm:py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#e03d3f] transition-colors sm:text-sm shrink-0"
+                  className="hidden sm:inline-flex items-center justify-center rounded-full bg-[#ff4d4f] px-4 sm:px-5 py-1.5 sm:py-2 text-xs font-semibold text-white shadow-sm hover:bg-[#e03d3f] transition-colors sm:text-sm shrink-0"
                 >
                   Login
                 </Link>
               )}
+
+              {/* Hamburger button in sticky bar for mobile */}
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(true)}
+                className="lg:hidden flex items-center justify-center size-8 sm:size-9 rounded-full bg-gray-100/90 hover:bg-red-50 text-gray-700 border border-gray-200/80 shadow-2xs transition-all cursor-pointer shrink-0"
+                aria-label="Open navigation menu"
+              >
+                <Menu size={16} strokeWidth={2.2} />
+              </button>
             </div>
           </div>
         </div>
@@ -377,6 +409,97 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
 
       {/* Spotlight Command Search Modal */}
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* ── Mobile Navigation Drawer ── */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-[200] lg:hidden">
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-xs mobile-drawer-backdrop"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+
+          {/* Drawer panel */}
+          <nav
+            className="absolute top-0 right-0 h-full w-[280px] sm:w-[320px] bg-white shadow-2xl mobile-drawer-panel flex flex-col"
+            aria-label="Mobile navigation"
+          >
+            {/* Drawer header */}
+            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+              <img
+                src={sewaLogo}
+                alt="SEWA FIRST"
+                className="h-9 w-auto object-contain"
+              />
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="size-9 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center text-gray-600 transition-colors cursor-pointer"
+                aria-label="Close menu"
+              >
+                <X size={18} strokeWidth={2.2} />
+              </button>
+            </div>
+
+            {/* Nav links */}
+            <div className="flex-1 overflow-y-auto py-3">
+              {[
+                { label: "Home", to: "/", nav: "home" },
+                { label: "About", to: "/about", nav: "about" },
+                { label: "Guidelines", to: "/guidelines", nav: "guidelines" },
+                { label: "Problem Statements", to: "/problem-statements", nav: "problems" },
+                { label: "Events", to: "/events", nav: "events" },
+                { label: "Resources", to: "/resources", nav: "resources" },
+                { label: "FAQ", to: "/faq", nav: "faq" },
+                { label: "Contact Us", to: "/contact", nav: "contact" },
+              ].map((item) => (
+                <Link
+                  key={item.nav}
+                  to={item.to}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`block px-6 py-3.5 text-[15px] font-semibold uppercase tracking-wide transition-colors ${
+                    activeNav === item.nav
+                      ? "text-[#ff4d4f] bg-red-50/60 border-r-[3px] border-[#ff4d4f]"
+                      : "text-gray-800 hover:text-[#ff4d4f] hover:bg-gray-50"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </div>
+
+            {/* Drawer footer: Auth + DTU link */}
+            <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+              {isSignedIn ? (
+                <button
+                  type="button"
+                  onClick={() => { signOut(); setMobileMenuOpen(false); }}
+                  className="w-full h-10 rounded-md border border-[#ff4d4f] text-[#ff4d4f] font-semibold text-sm hover:bg-red-50 transition-colors cursor-pointer"
+                >
+                  Sign Out
+                </button>
+              ) : (
+                <Link
+                  to="/signin"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-center w-full h-10 rounded-md bg-[#ff4d4f] text-white font-semibold text-sm hover:bg-[#e03d3f] transition-colors"
+                >
+                  Login / Sign Up
+                </Link>
+              )}
+              <a
+                href="https://dtu.ac.in"
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center justify-center gap-1.5 text-[#ff4d4f] font-semibold text-xs underline underline-offset-2"
+              >
+                <span>dtu.ac.in</span>
+                <ExternalLink size={12} className="stroke-[2.2]" />
+              </a>
+            </div>
+          </nav>
+        </div>
+      )}
     </>
   );
 }
@@ -682,7 +805,7 @@ export function CountdownTimer() {
 
   return (
     <div
-      className="countdown px-5 sm:px-8 md:px-10 py-3 sm:py-3.5 select-none border border-black/[0.04]"
+      className="countdown px-4 sm:px-8 md:px-10 py-3 sm:py-3.5 select-none border border-black/[0.04] max-w-[calc(100vw-2rem)]"
       role="timer"
       aria-label="Countdown to SEWA 2026 Launch on 19 September 2026"
     >
@@ -1498,11 +1621,11 @@ export function HomePage() {
                 />
               </div>
 
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-extrabold leading-tight text-white drop-shadow-lg whitespace-nowrap uppercase tracking-tight">
+              <h1 className="text-xl sm:text-3xl md:text-4xl lg:text-[2.6rem] font-extrabold leading-tight text-white drop-shadow-lg uppercase tracking-tight">
                 Rashtriya Youth Innovation Challenge 2026
               </h1>
 
-              <p className="mt-4 text-xl sm:text-2xl md:text-3xl font-bold text-white/90 tracking-wider uppercase">
+              <p className="mt-3 sm:mt-4 text-base sm:text-2xl md:text-3xl font-bold text-white/90 tracking-wider uppercase">
                 Observe. Ideate. Innovate. Impact.
               </p>
 
