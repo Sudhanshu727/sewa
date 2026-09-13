@@ -105,7 +105,7 @@ const externalLinks = [
 ];
 
 const sectionHeadingClass =
-  "t-main-heading uppercase text-primary";
+  "t-main-heading uppercase";
 
 export function AdditionalResourcesPage() {
   useEffect(() => {

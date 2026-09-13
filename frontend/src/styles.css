@@ -515,6 +515,142 @@
     color: var(--primary);
   }
 
+  /* ------------------------------------------------------------------ *
+   * Participation Benefits node diagram.
+   *
+   * The stage is a fixed 1200x680 coordinate space: the SVG connectors and
+   * the absolutely positioned cards share those coordinates, so the whole
+   * thing scales as one unit rather than reflowing.
+   *
+   * The scale factor is measured in JS (ResizeObserver) and written to
+   * --diagram-scale, because it cannot be expressed in CSS: scale() needs a
+   * unitless number, and calc() cannot divide one length by another to
+   * produce one. The aspect-ratio below reserves the correct height before
+   * hydration so nothing jumps on load.
+   * ------------------------------------------------------------------ */
+  .diagram-frame {
+    width: 100%;
+    aspect-ratio: 1200 / 680;
+    overflow: hidden;
+  }
+
+  .diagram-stage {
+    position: relative;
+    width: 1200px;
+    height: 680px;
+    transform-origin: top left;
+    transform: scale(var(--diagram-scale, 1));
+    user-select: none;
+  }
+
+  .soft-card-shadow {
+    box-shadow:
+      0 14px 34px -8px rgba(30, 41, 59, 0.08),
+      0 4px 12px -2px rgba(30, 41, 59, 0.04);
+  }
+
+  .badge-shadow {
+    box-shadow: 0 6px 14px -3px rgba(15, 23, 42, 0.12);
+  }
+
+  .icon-badge {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Objectives roadmap grid.
+   *
+   * All ten rows share one grid, so the card column is sized once against
+   * the longest description and every card comes out that width — rather
+   * than each card stretching to fill the container. minmax(0, max-content)
+   * lets the column shrink and wrap on narrow screens instead of
+   * overflowing.
+   * ------------------------------------------------------------------ */
+  .objectives-grid {
+    display: grid;
+    grid-template-columns: auto auto minmax(0, max-content);
+    align-items: center;
+    justify-content: center;
+    column-gap: 14px;
+  }
+
+  @media (min-width: 640px) {
+    .objectives-grid {
+      column-gap: 20px;
+    }
+  }
+
+  .objectives-arrow {
+    grid-column: 1 / -1;
+  }
+
+  /* Objectives roadmap: one card per step. */
+  .roadmap-card {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.875rem;
+    box-shadow:
+      0 1px 3px 0 rgba(0, 0, 0, 0.02),
+      0 1px 2px -1px rgba(0, 0, 0, 0.02);
+    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  }
+
+  .roadmap-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Timeline roadmap depth: pin badges, their inner discs, and node dots. */
+  .pin-shadow {
+    box-shadow:
+      0 16px 32px -6px rgba(0, 0, 0, 0.18),
+      0 8px 16px -6px rgba(0, 0, 0, 0.1);
+  }
+
+  .inner-circle-shadow {
+    box-shadow:
+      inset 0 2px 4px 0 rgba(0, 0, 0, 0.06),
+      0 4px 8px 0 rgba(0, 0, 0, 0.1);
+  }
+
+  .node-dot-shadow {
+    box-shadow: 0 3px 6px -1px rgba(0, 0, 0, 0.2);
+  }
+
+  /* ------------------------------------------------------------------ *
+   * Innovation Journey phase ribbons.
+   *
+   * Interlocking chevrons: each ribbon has a notch cut from its left edge
+   * and a point on its right, so consecutive phases slot together. Squared
+   * off below the md breakpoint, where the ribbons stack.
+   * ------------------------------------------------------------------ */
+  .chevron-start {
+    clip-path: polygon(0% 0%, calc(100% - 18px) 0%, 100% 50%, calc(100% - 18px) 100%, 0% 100%, 14px 50%);
+  }
+
+  .chevron-middle,
+  .chevron-end {
+    clip-path: polygon(0% 0%, calc(100% - 18px) 0%, 100% 50%, calc(100% - 18px) 100%, 0% 100%, 18px 50%);
+  }
+
+  @media (max-width: 768px) {
+    .chevron-start,
+    .chevron-middle,
+    .chevron-end {
+      clip-path: none;
+      border-radius: 0.375rem;
+    }
+  }
+
   .search-field {
     display: flex;
     min-height: 48px;

@@ -4,7 +4,11 @@
   --vw-min: 380;
   --vw-max: 1280;
 
-  /* MAIN HEADING — the big section titles (currently the 68px red caps). */
+  /* HEADING COLOUR — one switch for every .t-main-heading on the site.
+     Set to a colour keyword, hex, or var(--primary) to go back to red. */
+  --heading-color: #172554;
+
+  /* MAIN HEADING — the big section titles. */
   --main-heading-min: 52;
   --main-heading-max: 96;
   --main-heading-leading: 0.95;
@@ -94,7 +98,7 @@
   letter-spacing: var(--main-heading-tracking);
   text-align: center;
   margin-bottom: calc(var(--title-gap) * var(--u));
-  color: #172554;
+  color: var(--heading-color);
 }
 
 .t-subheading-1 {

@@ -50,12 +50,12 @@ import satymevjayteLogo from "../assets/satymevjayte.svg";
 import govtofnctLogo from "../assets/govtofnctdelhi.svg";
 import sewaLogo from "../assets/sewalogo.svg";
 import sewaWhiteLogo from "../assets/sewawhite.svg";
-import timelineImg from "../assets/timeline.jpg";
-import benefitsSvg from "../assets/benefits.svg";
-import philosophySvg from "../assets/philosophy.svg";
-import objectiveSvg from "../assets/objective.svg";
 import uniqueFeaturesSvg from "../assets/unique_features.svg";
+import { InnovationJourney } from "./InnovationJourney";
+import { ObjectivesRoadmap } from "./ObjectivesRoadmap";
+import { ParticipationBenefits } from "./ParticipationBenefits";
 import { SearchModal } from "./SearchModal";
+import { TimelineRoadmap } from "./TimelineRoadmap";
 
 const heroImages = [
   {
@@ -1396,7 +1396,7 @@ export function StatisticsSection() {
         </div>
 
         {/* Charts Container with light background */}
-        <div className="mt-14 sm:mt-18 rounded-2xl bg-[#f8fafc] border border-gray-200/70 p-4 sm:p-6 lg:p-8">
+        <div className="mt-14 sm:mt-18 rounded-2xl p-4 sm:p-6 lg:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 sm:gap-6">
             {/* Card 1: Entries by Level */}
             <div className="rounded-2xl bg-white p-5 sm:p-6 border border-gray-200/90 shadow-2xs flex flex-col justify-between">
@@ -1707,14 +1707,10 @@ export function HomePage() {
 
         {/* ── Participation Benefits ── */}
         <section id="benefits" className="t-section-band bg-white scroll-mt-20">
-          <div className="site-shell max-w-[1240px]">
-            <div className="w-full flex items-center justify-center">
-              <img
-                src={benefitsSvg}
-                alt="Participation Benefits - SEWA FIRST RYIC 2026"
-                className="w-full h-auto object-contain max-w-[1200px] select-none"
-              />
-            </div>
+          {/* Wider than .site-shell (1200px) so the diagram renders larger.
+              Change the 1440px to resize it. */}
+          <div className="mx-auto w-[min(100%-2rem,1440px)]">
+            <ParticipationBenefits />
           </div>
         </section>
 
@@ -1725,7 +1721,7 @@ export function HomePage() {
               THEMES
             </h2>
 
-            <p className="t-subheading-2 text-[#172554] mb-8 sm:mb-10">
+            <p className="t-subheading-2 text-center text-[#172554] mb-8 sm:mb-10">
               The Rashtriya Youth Innovation Challenge 2026 focuses on two broad themes:
             </p>
 
@@ -1743,18 +1739,14 @@ export function HomePage() {
 
         {/* ── Timeline of 100 Day Journey ── */}
         <section id="timeline" className="t-section-band scroll-mt-20">
-          <div className="site-shell">
+          {/* Wider than .site-shell so the 1400px roadmap renders near full
+              size. Change the 1440px to resize it. */}
+          <div className="mx-auto w-[min(100%-2rem,1440px)]">
             <h2 className="t-main-heading text-[#172554]">
               <span className="uppercase">Timeline</span>
-              <span className="t-subheading-2 text-[#172554] block">of 100 Day Journey</span>
+              <span className="t-subheading-2 block text-[#172554]">of 100 Day Journey</span>
             </h2>
-            <div className="flex items-center justify-center">
-              <img
-                src={timelineImg}
-                alt="Timeline of 100 Day Journey - SEWA FIRST RYIC 2026"
-                className="w-full max-w-5xl h-auto object-contain mix-blend-multiply"
-              />
-            </div>
+            <TimelineRoadmap />
           </div>
         </section>
 
@@ -3737,12 +3729,10 @@ export function AboutPage() {
                   The philosophy of SEWA FIRST – Rashtriya Youth Innovation Challenge 2026 is rooted in the belief that innovation should begin with service and end with impact. It encourages young Indians to observe real problems around them, understand the needs of people and communities, and transform these challenges into practical, affordable, sustainable and implementable solutions.
                 </p>
               </div>
-              <div className="mt-8 sm:mt-12 flex justify-center">
-                <img
-                  src={philosophySvg}
-                  alt="Philosophy 8-Step Pathway: Observe, Identify, Understand, Innovate, Create, Demonstrate, Implement, Benefit"
-                  className="w-full max-w-4xl h-auto object-contain select-none"
-                />
+              {/* Breaks out of the About page's max-w-5xl column so the eight
+                  step columns get room to breathe. */}
+              <div className="relative left-1/2 mt-8 w-[min(100vw-2rem,1280px)] -translate-x-1/2 sm:mt-12">
+                <InnovationJourney />
               </div>
             </section>
 
@@ -3772,12 +3762,11 @@ export function AboutPage() {
               >
                 OBJECTIVES
               </h2>
-              <div className="mt-6 sm:mt-10 flex justify-center">
-                <img
-                  src={objectiveSvg}
-                  alt="10 Core Objectives of SEWA FIRST RYIC 2026"
-                  className="w-full max-w-4xl h-auto object-contain select-none"
-                />
+              {/* Breaks out of the About page's max-w-5xl column. 1360px is
+                  the narrowest frame that still lets the longest objective
+                  description sit on one line at content size. */}
+              <div className="relative left-1/2 w-[min(100vw-2rem,1360px)] -translate-x-1/2">
+                <ObjectivesRoadmap />
               </div>
             </section>
 
