@@ -1,5 +1,5 @@
 :root {
- 
+
   /* Viewport range over which sizes scale, in px. */
   --vw-min: 380;
   --vw-max: 1280;
@@ -46,45 +46,23 @@
 
   --u: calc(1rem / 18);
 
-  --vw-progress: calc(
-    (100vw - (var(--vw-min) * 1px)) / (var(--vw-max) - var(--vw-min))
-  );
+  --vw-progress: calc((100vw - (var(--vw-min) * 1px)) / (var(--vw-max) - var(--vw-min)));
 
-  --fs-main-heading: clamp(
-    calc(var(--main-heading-min) * var(--u)),
-    calc(
-      var(--main-heading-min) * var(--u) +
-        (var(--main-heading-max) - var(--main-heading-min)) * var(--vw-progress)
-    ),
-    calc(var(--main-heading-max) * var(--u))
-  );
+  --fs-main-heading: clamp(calc(var(--main-heading-min) * var(--u)),
+      calc(var(--main-heading-min) * var(--u) + (var(--main-heading-max) - var(--main-heading-min)) * var(--vw-progress)),
+      calc(var(--main-heading-max) * var(--u)));
 
-  --fs-subheading-1: clamp(
-    calc(var(--subheading-1-min) * var(--u)),
-    calc(
-      var(--subheading-1-min) * var(--u) +
-        (var(--subheading-1-max) - var(--subheading-1-min)) * var(--vw-progress)
-    ),
-    calc(var(--subheading-1-max) * var(--u))
-  );
+  --fs-subheading-1: clamp(calc(var(--subheading-1-min) * var(--u)),
+      calc(var(--subheading-1-min) * var(--u) + (var(--subheading-1-max) - var(--subheading-1-min)) * var(--vw-progress)),
+      calc(var(--subheading-1-max) * var(--u)));
 
-  --fs-subheading-2: clamp(
-    calc(var(--subheading-2-min) * var(--u)),
-    calc(
-      var(--subheading-2-min) * var(--u) +
-        (var(--subheading-2-max) - var(--subheading-2-min)) * var(--vw-progress)
-    ),
-    calc(var(--subheading-2-max) * var(--u))
-  );
+  --fs-subheading-2: clamp(calc(var(--subheading-2-min) * var(--u)),
+      calc(var(--subheading-2-min) * var(--u) + (var(--subheading-2-max) - var(--subheading-2-min)) * var(--vw-progress)),
+      calc(var(--subheading-2-max) * var(--u)));
 
-  --fs-content: clamp(
-    calc(var(--content-min) * var(--u)),
-    calc(
-      var(--content-min) * var(--u) +
-        (var(--content-max) - var(--content-min)) * var(--vw-progress)
-    ),
-    calc(var(--content-max) * var(--u))
-  );
+  --fs-content: clamp(calc(var(--content-min) * var(--u)),
+      calc(var(--content-min) * var(--u) + (var(--content-max) - var(--content-min)) * var(--vw-progress)),
+      calc(var(--content-max) * var(--u)));
 }
 
 .t-main-heading {
@@ -132,6 +110,16 @@
   overflow-wrap: break-word;
 }
 
+/* Same scale as .t-content, dialled down a step. For bold/dense UI text
+   (table cells, pills, nav controls) where full content size reads too
+   large once weight is added. */
+.t-content-sm {
+  font-size: calc(var(--fs-content) * 0.82);
+  line-height: var(--content-leading);
+  font-weight: var(--content-weight);
+  letter-spacing: var(--content-tracking);
+}
+
 .t-content-block :is(p, li) {
   font-size: var(--fs-content);
   line-height: var(--content-leading);
@@ -168,7 +156,7 @@
   margin-bottom: calc(var(--title-gap-wide) * var(--u));
 }
 
-.t-section-stack > * + * {
+.t-section-stack>*+* {
   margin-top: calc(var(--section-gap) * var(--u));
 }
 

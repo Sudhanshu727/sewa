@@ -25,6 +25,12 @@ const envSchema = z.object({
   SMTP_USER: z.string().min(1),
   SMTP_PASS: z.string().min(1),
   SMTP_FROM: z.string().min(1),
+
+  // Where uploaded team ID cards are written. A relative path is resolved
+  // from the process's working directory (typically the backend/ root) -
+  // use an absolute path in production if the working directory isn't
+  // guaranteed stable across deploys.
+  UPLOAD_DIR: z.string().default("uploads/id-cards"),
 });
 
 const parsed = envSchema.safeParse(process.env);

@@ -1,105 +1,606 @@
-import { useEffect } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { Search, X } from "lucide-react";
 import { Header, Footer } from "./SewaSite";
 
-type Category = { numeral: string; label: string };
+/* ── Reusable Pagination ──────────────────────────────────────────── */
+function Pagination({
+  total,
+  current,
+  onChange,
+}: {
+  total: number;
+  current: number;
+  onChange: (page: number) => void;
+}) {
+  const btnBase =
+    "t-content-sm font-semibold! inline-flex items-center justify-center h-9 min-w-[36px] rounded-xl border transition-colors select-none cursor-pointer";
+  const activeCls = `${btnBase} bg-[#2368B2] border-[#2368B2] text-white shadow-[0px_2px_6px_rgba(35,104,178,0.3)]`;
+  const inactiveCls =
+    `${btnBase} bg-white border-[rgba(226,232,240,0.9)] text-[#374151] hover:bg-[#F1F5F9]`;
+  const navCls =
+    `${btnBase} px-4 gap-1.5 bg-white border-[rgba(226,232,240,0.9)] text-[#374151] hover:bg-[#F1F5F9]`;
 
-type Theme = {
-  id: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-  categories: Category[];
-};
+  const pages = Array.from({ length: total }, (_, index) => index + 1);
 
-export const NATIONAL_CATEGORIES: Category[] = [
-  { numeral: "I", label: "Defence, Intelligence, Space & National Security" },
-  { numeral: "II", label: "Disaster Management & Resilience" },
-  { numeral: "III", label: "Manufacturing & Electronics, AI, Robotics & Autonomous Systems" },
-  { numeral: "IV", label: "Energy & Sustainable Technology & Environment" },
-  { numeral: "V", label: "Advanced Engineering, Infrastructure, Future Mobility & Transportation" },
-];
+  if (total <= 1) return null;
 
-export const COMMUNITY_CATEGORIES: Category[] = [
-  { numeral: "I", label: "Village & Panchayat Development, Agriculture & Rural Economy" },
-  { numeral: "II", label: "Education & Skill Development" },
-  { numeral: "III", label: "Healthcare & Community Well-Being" },
-  { numeral: "IV", label: "City & Urban Problems" },
-  { numeral: "V", label: "Environment & Natural Resources" },
-  { numeral: "VI", label: "Sports (Khelo India)" },
-  { numeral: "VII", label: "Employment & Livelihood" },
-  { numeral: "VIII", label: "Women & Child Safety and Development" },
-  { numeral: "IX", label: "Safety & Disaster Management" },
-  { numeral: "X", label: "Transport, Energy & Tourism" },
-  { numeral: "XI", label: "Miscellaneous" },
-];
-
-const THEMES: Theme[] = [
-  {
-    id: "national",
-    eyebrow: "Theme 1",
-    title: "National Level Innovation",
-    description:
-      "Participants will work on identified challenges and problem statements of national significance, developing innovative, sustainable and scalable solutions with the potential for adoption across India. Innovations should have a starting TRL of 4–6 and are expected to progress towards TRL 7–9 by the end of the Challenge, demonstrating a clear pathway from validated technology to an operational, deployable solution.",
-    categories: NATIONAL_CATEGORIES,
-  },
-  {
-    id: "community",
-    eyebrow: "Theme 2",
-    title: "Local Community Level Innovations – Village / District / State",
-    description:
-      "Participants will identify real problems and unmet needs within their own villages, districts or states and develop locally relevant, affordable, sustainable and implementable solutions that directly benefit the community and have the potential to be replicated or scaled in other regions. Innovations should have a starting TRL of 1–3 and are expected to progress towards TRL 6–7 by the end of the Challenge, demonstrating a clear journey from an initial concept or proof of concept to a validated and demonstrable solution.",
-    categories: COMMUNITY_CATEGORIES,
-  },
-];
-
-/** Five-colour palette that repeats down the rows, matching the reference design. */
-const ROW_STYLES = [
-  { row: "bg-[#eff6ff]", badge: "bg-[#3b82f6]" },
-  { row: "bg-[#eefaf2]", badge: "bg-[#22a565]" },
-  { row: "bg-[#fff5eb]", badge: "bg-[#f59436]" },
-  { row: "bg-[#f1f2fd]", badge: "bg-[#8b8ff0]" },
-  { row: "bg-[#fef1f1]", badge: "bg-[#f98d8d]" },
-];
-
-function CategoryTable({ categories }: { categories: Category[] }) {
   return (
-    <div className="mt-8 sm:mt-10">
-      {/* Column header */}
-      <div className="grid grid-cols-[64px_1fr] sm:grid-cols-[92px_1fr] items-center rounded-xl bg-[#eef1f6] px-4 sm:px-6 py-3">
-        <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.12em] text-gray-600">
-          #
-        </span>
-        <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.12em] text-gray-600">
-          Problem Statement Categories
-        </span>
-      </div>
+    <div className="mt-6 flex items-center justify-center gap-1.5 flex-wrap">
+      <button
+        type="button"
+        className={navCls}
+        aria-label="Previous page"
+        disabled={current === 1}
+        onClick={() => onChange(current - 1)}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+          strokeLinejoin="round">
+          <polyline points="15 18 9 12 15 6" />
+        </svg>
+        Previous
+      </button>
 
-      <ul className="mt-3 space-y-3">
-        {categories.map((category, index) => {
-          const style = ROW_STYLES[index % ROW_STYLES.length];
-          return (
-            <li
-              key={category.numeral}
-              className={`grid grid-cols-[64px_1fr] sm:grid-cols-[92px_1fr] items-center rounded-xl ${style.row} px-4 sm:px-6 py-4 sm:py-5 transition-shadow hover:shadow-2xs`}
-            >
-              <span
-                className={`flex size-9 sm:size-10 items-center justify-center rounded-full ${style.badge} text-[11px] sm:text-xs font-bold text-white shadow-2xs`}
-                aria-hidden="true"
-              >
-                {category.numeral}
-              </span>
-              <p className="t-content border-l border-gray-300/70 pl-4 sm:pl-6 font-medium! text-gray-900 text-left [hyphens:none]">
-                <span className="sr-only">Category {category.numeral}: </span>
-                {category.label}
-              </p>
-            </li>
-          );
-        })}
-      </ul>
+      {pages.map((p) => (
+        <button
+          key={p}
+          type="button"
+          className={p === current ? activeCls : inactiveCls}
+          onClick={() => onChange(p)}
+          aria-current={p === current ? "page" : undefined}
+          style={{ padding: "0 12px" }}
+        >
+          {p}
+        </button>
+      ))}
+
+      <button
+        type="button"
+        className={navCls}
+        aria-label="Next page"
+        disabled={current === total}
+        onClick={() => onChange(current + 1)}
+      >
+        Next
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" strokeWidth="2.2" strokeLinecap="round"
+          strokeLinejoin="round">
+          <polyline points="9 18 15 12 9 6" />
+        </svg>
+      </button>
     </div>
   );
 }
 
+type Category = {
+  label: string;
+  idNumber: string;
+  badgeBg: string;
+  badgeText: string;
+};
+
+/*
+ * National Level: every category offers two options, not two separate rows —
+ * take the problem statement we've supplied, or propose your own within that
+ * category. Both live inside the ONE row for that category, as two stacked
+ * sub-entries in the Problem Statement and ID Number columns, so the table
+ * stays five rows (one per category) instead of ten.
+ */
+type NationalCategory = Category & {
+  psTitle: string;
+  psUrl?: string;
+  psId: string; // e.g. "NAT-001-PS"
+  openId: string; // e.g. "NAT-001-OP"
+};
+
+export const NATIONAL_CATEGORIES: NationalCategory[] = [
+  {
+    label: "Defence, Intelligence, Space & National Security",
+    psTitle: "PS1 TITLE",
+    idNumber: "NAT-001",
+    psId: "NAT-001-PS",
+    openId: "NAT-001-OP",
+    badgeBg: "#FDE8E8",
+    badgeText: "#E03137",
+  },
+  {
+    label: "Disaster Management & Resilience",
+    psTitle: "PS2 TITLE",
+    idNumber: "NAT-002",
+    psId: "NAT-002-PS",
+    openId: "NAT-002-OP",
+    badgeBg: "#DBEAFE",
+    badgeText: "#0284C7",
+  },
+  {
+    label: "Manufacturing & Electronics, AI, Robotics & Autonomous Systems",
+    psTitle: "PS3 TITLE",
+    idNumber: "NAT-003",
+    psId: "NAT-003-PS",
+    openId: "NAT-003-OP",
+    badgeBg: "#DCFCE7",
+    badgeText: "#16A34A",
+  },
+  {
+    label: "Energy & Sustainable Technology & Environment",
+    psTitle: "PS4 TITLE",
+    idNumber: "NAT-004",
+    psId: "NAT-004-PS",
+    openId: "NAT-004-OP",
+    badgeBg: "#FEF3C7",
+    badgeText: "#D97706",
+  },
+  {
+    label: "Advanced Engineering, Infrastructure, Future Mobility & Transportation",
+    psTitle: "PS5 TITLE",
+    idNumber: "NAT-005",
+    psId: "NAT-005-PS",
+    openId: "NAT-005-OP",
+    badgeBg: "#EDE9FE",
+    badgeText: "#7C3AED",
+  },
+];
+
+/*
+ * Regional (Local Community Level): open to all, with no problem statements
+ * provided at all — every category is solved as an open proposal. There is
+ * only ever one option per row, and the table has no Problem Statement
+ * column since there is nothing to show in it.
+ */
+export const COMMUNITY_CATEGORIES: Category[] = [
+  { label: "Village & Panchayat Development, Agriculture & Rural Economy", idNumber: "REG-001-OP", badgeBg: "#FDE8E8", badgeText: "#E03137" },
+  { label: "Education & Skill Development", idNumber: "REG-002-OP", badgeBg: "#DBEAFE", badgeText: "#0284C7" },
+  { label: "Healthcare & Community Well-being", idNumber: "REG-003-OP", badgeBg: "#DCFCE7", badgeText: "#16A34A" },
+  { label: "City & Urban Problems", idNumber: "REG-004-OP", badgeBg: "#FEF3C7", badgeText: "#D97706" },
+  { label: "Environment & Natural Resources", idNumber: "REG-005-OP", badgeBg: "#EDE9FE", badgeText: "#7C3AED" },
+  { label: "Sports (Khelo India)", idNumber: "REG-006-OP", badgeBg: "#FDE8E8", badgeText: "#E03137" },
+  { label: "Employment & Livelihood", idNumber: "REG-007-OP", badgeBg: "#DBEAFE", badgeText: "#0284C7" },
+  { label: "Women & Child Safety and Development", idNumber: "REG-008-OP", badgeBg: "#DCFCE7", badgeText: "#16A34A" },
+  { label: "Safety & Disaster Management", idNumber: "REG-009-OP", badgeBg: "#FEF3C7", badgeText: "#D97706" },
+  { label: "Transport, Energy & Tourism", idNumber: "REG-010-OP", badgeBg: "#EDE9FE", badgeText: "#7C3AED" },
+  { label: "Miscellaneous", idNumber: "REG-011-OP", badgeBg: "#FDE8E8", badgeText: "#E03137" },
+];
+
+/*
+ * ── Table Card ──────────────────────────────────────────────────────
+ * showPsColumn=true  (National): 4 columns — #, Category, Problem Statement,
+ *   ID Number. A row either shows the PS we've supplied (with PDF/link
+ *   icons) or, when row.psTitle is absent, an "Open — propose your own"
+ *   badge in its place.
+ * showPsColumn=false (Regional): 3 columns — #, Category, ID Number. There
+ *   is no Problem Statement column at all, since every regional entry is an
+ *   open proposal and there is nothing to show for it.
+ */
+function ProblemModal({
+  title,
+  children,
+  onClose,
+}: {
+  title: string;
+  children: ReactNode;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") onClose();
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#122033]/45 p-4 backdrop-blur-[3px] sm:p-6"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <article
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="problem-modal-title"
+        className="relative max-h-[calc(100vh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[20px] border border-[#E3EAF2] bg-white shadow-[0_24px_80px_rgba(15,35,65,0.25)] sm:max-h-[calc(100vh-3rem)]"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close problem statement details"
+          className="absolute right-4 top-4 z-10 inline-flex size-9 cursor-pointer items-center justify-center rounded-full bg-[#EDF3F8] text-[#1E3554] transition-colors hover:bg-[#DDE8F2] focus-visible:ring-2 focus-visible:ring-[#2368B2]"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="px-6 pb-7 pt-8 sm:px-8 sm:pt-9">
+          <h2
+            id="problem-modal-title"
+            className="pr-12 text-2xl font-bold leading-tight text-[#142340] sm:text-3xl"
+          >
+            {title}
+          </h2>
+
+          <div className="mt-6 rounded-xl border border-[#DCE6F0] bg-[#F8FAFC] p-5 text-sm leading-relaxed text-[#45566E]">
+            {children}
+          </div>
+
+          <div className="mt-6 flex justify-end">
+            <button
+              type="button"
+              onClick={onClose}
+              className="inline-flex cursor-pointer items-center gap-2 rounded-full bg-[#EAF1F8] px-5 py-2.5 text-sm font-semibold text-[#142340] transition-colors hover:bg-[#DDE8F2]"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  );
+}
+
+function TableCard({
+  categories,
+  showPsColumn,
+}: {
+  categories: Category[];
+  showPsColumn: boolean;
+}) {
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"category" | "id">("category");
+  const [page, setPage] = useState(1);
+  const [selectedRow, setSelectedRow] = useState<Category | null>(null);
+
+  const pageSize = 5;
+
+  const filteredCategories = useMemo(() => {
+    const query = search.trim().toLowerCase();
+
+    return categories
+      .filter((row) => {
+        const national = row as Partial<NationalCategory>;
+
+        const searchable = [
+          row.label,
+          row.idNumber,
+          national.psTitle,
+          national.psId,
+          national.openId,
+        ]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase();
+
+        return !query || searchable.includes(query);
+      })
+      .sort((left, right) => {
+        const leftValue = sortBy === "id" ? left.idNumber : left.label;
+        const rightValue = sortBy === "id" ? right.idNumber : right.label;
+
+        return leftValue.localeCompare(rightValue);
+      });
+  }, [categories, search, sortBy]);
+
+  const totalPages = Math.max(
+    1,
+    Math.ceil(filteredCategories.length / pageSize),
+  );
+
+  const visibleCategories = filteredCategories.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  );
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, sortBy, categories]);
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const categoryWidth = showPsColumn ? "38%" : "62%";
+  const idWidth = "23%";
+
+  return (
+    <div>
+      <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative w-full sm:max-w-[300px]">
+          <Search
+            size={16}
+            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[#8291A7]"
+          />
+          <input
+            type="search"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="Search problem statements..."
+            aria-label="Search problem statements"
+            className="h-10 w-full rounded-lg border border-[#DCE6F0] bg-white pl-9 pr-3 text-sm text-[#142340] outline-none placeholder:text-[#8291A7] focus:border-[#2368B2] focus:ring-2 focus:ring-[#2368B2]/15"
+          />
+        </div>
+
+        <label className="flex items-center gap-2 text-sm font-semibold text-[#60718B]">
+          Sort by
+          <select
+            value={sortBy}
+            onChange={(event) =>
+              setSortBy(event.target.value as "category" | "id")
+            }
+            className="h-10 cursor-pointer rounded-lg border border-[#DCE6F0] bg-white px-3 text-sm font-semibold text-[#263A56] outline-none focus:border-[#2368B2]"
+          >
+            <option value="category">Category</option>
+            <option value="id">ID Number</option>
+          </select>
+        </label>
+      </div>
+
+      <div className="w-full rounded-[24px] border border-[rgba(226,232,240,0.8)] bg-white shadow-[0px_4px_24px_rgba(0,0,0,0.03)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <table
+            className={`w-full border-collapse ${
+              showPsColumn ? "min-w-[780px]" : "min-w-[560px]"
+            }`}
+          >
+            <thead>
+              <tr
+                className="border-b border-[#E2E9F2]"
+                style={{
+                  background:
+                    "linear-gradient(180deg,#EDF2F7 0%,#E8EEF6 100%)",
+                }}
+              >
+                <th className="w-[84px] px-6 py-4 text-center">
+                  <span className="t-content-sm font-bold! tracking-[0.65px] uppercase text-[#60718B]">
+                    #
+                  </span>
+                </th>
+
+                <th
+                  className="px-6 py-4 text-left"
+                  style={{ width: categoryWidth }}
+                >
+                  <span className="t-content-sm font-bold! tracking-[0.65px] uppercase text-[#60718B]">
+                    Category
+                  </span>
+                </th>
+
+                {showPsColumn && (
+                  <th
+                    className="px-6 py-4 text-left"
+                    style={{ width: "31%" }}
+                  >
+                    <span className="t-content-sm font-bold! tracking-[0.65px] uppercase text-[#60718B]">
+                      Problem Statement
+                    </span>
+                  </th>
+                )}
+
+                <th
+                  className="px-6 py-4 text-center"
+                  style={{ width: idWidth }}
+                >
+                  <span className="t-content-sm font-bold! tracking-[0.65px] uppercase text-[#60718B]">
+                    ID Number
+                  </span>
+                </th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {visibleCategories.map((row, i) => {
+                const national = row as Partial<NationalCategory>;
+                const hasTwoOptions =
+                  showPsColumn &&
+                  national.psId !== undefined &&
+                  national.openId !== undefined;
+
+                return (
+                  <tr
+                    key={row.idNumber}
+                    className={`transition-colors hover:bg-[#FAFBFD] ${
+                      i > 0 ? "border-t border-[#F1F5F9]" : ""
+                    }`}
+                  >
+                    <td className="w-[84px] px-6 py-[20.5px] text-center">
+                      <span
+                        className="t-content-sm font-bold! inline-flex h-9 w-9 items-center justify-center rounded-full shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
+                        style={{
+                          background: row.badgeBg,
+                          color: row.badgeText,
+                        }}
+                      >
+                        {(page - 1) * pageSize + i + 1}
+                      </span>
+                    </td>
+
+                    <td
+                      className="px-6 py-[27.5px]"
+                      style={{ width: categoryWidth }}
+                    >
+                      <span className="t-content-sm font-bold! tracking-[-0.375px] text-[#142340]">
+                        {row.label}
+                      </span>
+                    </td>
+
+                    {showPsColumn && (
+                      <td
+                        className="px-6 py-[22.5px]"
+                        style={{ width: "31%" }}
+                      >
+                        {hasTwoOptions ? (
+                          <div className="flex flex-col gap-2.5">
+                            <button
+                              type="button"
+                              onClick={() => setSelectedRow(row)}
+                              className="flex w-full cursor-pointer items-center gap-3 rounded-lg text-left transition-colors hover:bg-[#F8FAFC] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#2368B2]"
+                            >
+                              <span
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#FECACA] shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
+                                style={{
+                                  background: "rgba(254,242,242,0.6)",
+                                }}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#EF4444"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+                                  <polyline points="14 2 14 8 20 8" />
+                                </svg>
+                              </span>
+
+                              <span className="t-content-sm font-bold! text-[#142340]">
+                                {national.psTitle}
+                              </span>
+                            </button>
+
+                            <div className="flex items-center gap-3">
+                              <span
+                                className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#BBE3D0] shadow-[0px_1px_2px_rgba(0,0,0,0.05)]"
+                                style={{
+                                  background: "rgba(236,253,245,0.7)",
+                                }}
+                              >
+                                <svg
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                  stroke="#16A34A"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <path d="M12 20h9" />
+                                  <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z" />
+                                </svg>
+                              </span>
+
+                              <span className="t-content-sm font-bold! text-[#16A34A]">
+                                OPEN
+                              </span>
+                            </div>
+                          </div>
+                        ) : null}
+                      </td>
+                    )}
+
+                    <td
+                      className="px-6 py-[24.5px] text-center"
+                      style={{ width: idWidth }}
+                    >
+                      {hasTwoOptions ? (
+                        <div className="flex flex-col gap-2.5">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedRow(row)}
+                            className="t-content-sm font-semibold! inline-flex cursor-pointer items-center justify-center rounded-full bg-[#EAF1F8] px-5 py-1.5 tracking-[0.3px] text-[#1E2F4D] hover:bg-[#DDE8F2]"
+                          >
+                            {national.psId}
+                          </button>
+
+                          <span className="t-content-sm font-semibold! inline-flex items-center justify-center rounded-full bg-[#EAF1F8] px-5 py-1.5 tracking-[0.3px] text-[#1E2F4D]">
+                            {national.openId}
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setSelectedRow(row)}
+                          className="t-content-sm font-semibold! inline-flex cursor-pointer items-center justify-center rounded-full bg-[#EAF1F8] px-5 py-1.5 tracking-[0.3px] text-[#1E2F4D] hover:bg-[#DDE8F2]"
+                        >
+                          {row.idNumber}
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {visibleCategories.length === 0 ? (
+        <p className="px-4 py-8 text-center text-sm text-[#60718B]">
+          No problem statements match your search.
+        </p>
+      ) : null}
+
+      <Pagination total={totalPages} current={page} onChange={setPage} />
+
+      {selectedRow ? (
+        <ProblemModal
+          title={selectedRow.label}
+          onClose={() => setSelectedRow(null)}
+        >
+          {(() => {
+            const national = selectedRow as Partial<NationalCategory>;
+
+            return (
+              <div className="space-y-4">
+                {showPsColumn && national.psTitle ? (
+                  <div>
+                    <p className="font-semibold text-[#263A56]">
+                      Problem Statement
+                    </p>
+                    <p className="mt-1">{national.psTitle}</p>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="font-semibold text-[#263A56]">Track</p>
+                    <p className="mt-1">
+                      Open innovation proposal within this category.
+                    </p>
+                  </div>
+                )}
+
+                <div>
+                  <p className="font-semibold text-[#263A56]">Category</p>
+                  <p className="mt-1">{selectedRow.label}</p>
+                </div>
+
+                <div>
+                  <p className="font-semibold text-[#263A56]">ID Number</p>
+                  <p className="mt-1">{selectedRow.idNumber}</p>
+                </div>
+
+                {showPsColumn && national.psId && national.openId ? (
+                  <div>
+                    <p className="font-semibold text-[#263A56]">
+                      Registration IDs
+                    </p>
+                    <p className="mt-1">
+                      Official PS: {national.psId}
+                    </p>
+                    <p>Open proposal: {national.openId}</p>
+                  </div>
+                ) : null}
+              </div>
+            );
+          })()}
+        </ProblemModal>
+      ) : null}
+    </div>
+  );
+}
+
+
+/* ── Page ────────────────────────────────────────────────────────────── */
 export function ProblemStatementsPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" });
@@ -112,38 +613,74 @@ export function ProblemStatementsPage() {
 
         <main className="pt-10 sm:pt-16 pb-20 sm:pb-28">
           <div className="site-shell max-w-5xl">
-            <h1 className="t-main-heading uppercase text-[#172554]">
-              Problem Statements
-            </h1>
-            <p className="t-content mx-auto mt-5 sm:mt-6 max-w-2xl text-center text-gray-500">
-              The Rashtriya Youth Innovation Challenge 2026 invites solutions across two broad
-              themes — national priorities and grassroots community needs.
-            </p>
+            <h1 className="t-main-heading uppercase text-[#172554]">Problem Statements</h1>
 
-            <div className="t-section-stack mt-10 sm:mt-14">
-              {THEMES.map((theme) => (
-                <section
-                  key={theme.id}
-                  id={theme.id}
-                  aria-labelledby={`${theme.id}-heading`}
-                  className="scroll-mt-28 rounded-[28px] border border-[#eaecf0] bg-white px-5 py-8 shadow-[0_10px_40px_rgba(0,0,0,0.05)] sm:px-10 sm:py-12"
+            <div className="t-section-stack mt-10 sm:mt-14 space-y-10 sm:space-y-14">
+
+              {/* ── Theme 1 ── */}
+              <section
+                id="national"
+                aria-labelledby="national-heading"
+                className="scroll-mt-28 rounded-[28px] border border-[#eaecf0] bg-white px-6 py-8 shadow-[0_10px_40px_rgba(0,0,0,0.05)] sm:px-10 sm:py-12"
+              >
+                <h2
+                  id="national-heading"
+                  className="t-subheading-2 text-[#112347] uppercase"
                 >
-                  <p className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.18em] text-primary">
-                    {theme.eyebrow}
-                  </p>
-                  <h2
-                    id={`${theme.id}-heading`}
-                    className="mt-2 text-2xl sm:text-3xl md:text-[34px] font-black leading-tight tracking-tight text-[#172554]"
-                  >
-                    {theme.title}
-                  </h2>
-                  <p className="t-content mt-5 text-gray-700 sm:text-justify">
-                    {theme.description}
-                  </p>
+                  Theme 1: National Level Innovation
+                </h2>
+                <p className="t-content mt-5 text-[#334155] sm:text-justify">
+                  Participants will work on identified challenges and problem statements of national
+                  significance, developing innovative, sustainable and scalable solutions with the
+                  potential for adoption across India. Innovations should have a starting TRL of
+                  4–6 and are expected to progress towards TRL 7–9 by the end of the Challenge,
+                  demonstrating a clear pathway from validated technology to an operational,
+                  deployable solution.
+                </p>
 
-                  <CategoryTable categories={theme.categories} />
-                </section>
-              ))}
+                <p className="t-content mt-4 text-[#334155]">
+                  For each theme, choose either the problem statement we&apos;ve provided, or
+                  propose and solve your own problem within that category.
+                </p>
+
+                <div className="mt-8">
+                  <TableCard categories={NATIONAL_CATEGORIES} showPsColumn />
+                </div>
+              </section>
+
+              {/* ── Theme 2 ── */}
+              <section
+                id="community"
+                aria-labelledby="community-heading"
+                className="scroll-mt-28 rounded-[28px] border border-[#eaecf0] bg-white px-6 py-8 shadow-[0_10px_40px_rgba(0,0,0,0.05)] sm:px-10 sm:py-12"
+              >
+                <h2
+                  id="community-heading"
+                  className="t-subheading-2 text-[#172554] uppercase"
+                >
+                  Theme 2: Local Community Level Innovations –{" "}
+                  Village / District / State
+                </h2>
+                <p className="t-content mt-5 text-[#334155] sm:text-justify">
+                  Participants will identify real problems and unmet needs within their own
+                  villages, districts or states and develop locally relevant, affordable,
+                  sustainable and implementable solutions that directly benefit the community and
+                  have the potential to be replicated or scaled in other regions. Innovations
+                  should have a starting TRL of 1–3 and are expected to progress towards TRL 6–7
+                  by the end of the Challenge, demonstrating a clear journey from an initial
+                  concept or proof of concept to a validated and demonstrable solution.
+                </p>
+
+                <p className="t-content mt-4 text-[#334155]">
+                  This theme has no fixed problem statements — participants identify and propose
+                  their own problem within a chosen category.
+                </p>
+
+                <div className="mt-8">
+                  <TableCard categories={COMMUNITY_CATEGORIES} showPsColumn={false} />
+                </div>
+              </section>
+
             </div>
           </div>
         </main>

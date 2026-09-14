@@ -23,6 +23,7 @@ import {
   type TeamMember,
 } from "../lib/api";
 import { useAuth } from "../lib/auth";
+import { PROBLEM_CATEGORIES, findProblemCategory, themeLabel, ID_CARD_ACCEPT, ID_CARD_ALLOWED_MIME, ID_CARD_MAX_SIZE_BYTES } from "../lib/problemCategories";
 import { Footer, Header } from "./SewaSite";
 
 // ─── Static option lists ────────────────────────────────────────────────────
@@ -45,47 +46,11 @@ const NORTH_STATE_OPTIONS = [
   "Chandigarh",
 ];
 
-const THEMES = [
-  "Smart Infrastructure & Urban Mobility",
-  "Healthcare & Preventive Medicine",
-  "Agriculture & Food Security",
-  "Education & Skill Development",
-  "Clean Energy & Climate Action",
-  "Digital Governance & Financial Inclusion",
-];
-
-const PROBLEMS_BY_THEME: Record<string, string[]> = {
-  "Smart Infrastructure & Urban Mobility": [
-    "PS-01: AI Traffic Routing",
-    "PS-02: Smart Parking",
-    "PS-03: Pothole Detection System",
-  ],
-  "Healthcare & Preventive Medicine": [
-    "PS-07: Rural Telemedicine",
-    "PS-08: Mental Health Tracker",
-    "PS-09: Drug Inventory AI",
-  ],
-  "Agriculture & Food Security": [
-    "PS-13: Crop Disease Detection",
-    "PS-14: Smart Irrigation",
-    "PS-15: Cold Chain Monitoring",
-  ],
-  "Education & Skill Development": [
-    "PS-19: Adaptive Learning Platform",
-    "PS-20: VR Skill Labs",
-    "PS-21: Regional Language EdTech",
-  ],
-  "Clean Energy & Climate Action": [
-    "PS-25: Solar Forecasting",
-    "PS-26: EV Fleet Optimizer",
-    "PS-27: Carbon Footprint Tracker",
-  ],
-  "Digital Governance & Financial Inclusion": [
-    "PS-31: Subsidy Disbursement dApp",
-    "PS-32: Gram Panchayat Dashboard",
-    "PS-33: Jan Dhan Fraud Detector",
-  ],
-};
+// Real category catalogue (National + Regional, PS/OPEN) now lives in
+// lib/problemCategories.ts, shared with the backend's validation - this used
+// to be a disconnected set of placeholder themes/problem-statements with no
+// relationship to the site's actual Problem Statements page or the backend
+// schema at all.
 
 const TEAM_SIZE_OPTIONS = [2, 3, 4, 5, 6]; // mirrors backend TEAM_MIN/MAX_MEMBERS
 
@@ -372,8 +337,10 @@ function ConfirmationSummary({
   email,
   teamName,
   institute,
+  institutionAddress,
   theme,
   problem,
+  idCardName,
   teamSize,
   members,
   teamId,
@@ -383,8 +350,10 @@ function ConfirmationSummary({
   email: string;
   teamName: string;
   institute: string;
+  institutionAddress: string;
   theme: string;
   problem: string;
+  idCardName: string;
   teamSize: number;
   members: MemberDraft[];
   teamId: string | null;
@@ -419,8 +388,10 @@ function ConfirmationSummary({
     ],
     ["Mobile Number", personal.phone || "-"],
     ["University Email", email],
+    ["Institute / Organisation Address", institutionAddress || "-"],
     ["Theme / Track", theme || "-"],
     ["Problem Statement", problem || "-"],
+    ["Organisation ID Card", idCardName || "-"],
     ["Team Size", `${teamSize} members`],
   ];
 
@@ -482,11 +453,23 @@ export function TeamRegisterPage() {
 
   const [step, setStep] = useState<WizardStep>(1);
   const [personal, setPersonal] = useState<PersonalDraft>(emptyPersonal());
-  const [theme, setTheme] = useState("");
-  const [problem, setProblem] = useState("");
+  const [problemCategoryCode, setProblemCategoryCode] = useState("");
+  // "" until a category is picked, then defaults to the only option a
+  // REGIONAL category has ("open") or is left for the user to choose on a
+  // NATIONAL one - see handleCategoryChange.
+  const [problemOptionType, setProblemOptionType] = useState<"" | "ps" | "open">("");
+  const [proposedProblemStatement, setProposedProblemStatement] = useState("");
   const [teamSize, setTeamSize] = useState(2);
   const [teamName, setTeamName] = useState("");
   const [institute, setInstitute] = useState("");
+  const [institutionAddress, setInstitutionAddress] = useState("");
+  // File objects can't be restored from a resumed draft (the browser never
+  // hands the server's stored file back to JS) - existingIdCardName shows
+  // what's already on file, and idCardFile is only set when the user
+  // chooses to replace it (or must be set, on first-time creation).
+  const [idCardFile, setIdCardFile] = useState<File | null>(null);
+  const [existingIdCardName, setExistingIdCardName] = useState<string | null>(null);
+  const [idCardError, setIdCardError] = useState("");
   // Slot 0 is always the signed-in leader. The backend seeds the leader into
   // team_members itself when the team is created, so slot 0 is display-only
   // here and never POSTed as a member (that would collide with the unique
@@ -565,8 +548,11 @@ export function TeamRegisterPage() {
           setExistingTeam(team);
           setTeamName(team.name);
           setInstitute(team.institute);
-          setTheme(team.theme);
-          setProblem(team.problemStatement);
+          setInstitutionAddress(team.institutionAddress);
+          setProblemCategoryCode(team.problemCategoryCode);
+          setProblemOptionType(team.problemOptionType);
+          setProposedProblemStatement(team.proposedProblemStatement ?? "");
+          setExistingIdCardName(team.idCardOriginalName);
           const roster = (team.members ?? []).map((m: TeamMember): MemberDraft => ({
             firstName: m.firstName,
             lastName: m.lastName,
@@ -580,8 +566,11 @@ export function TeamRegisterPage() {
         setTeamId(team.id);
         setTeamName(team.name);
         setInstitute(team.institute);
-        setTheme(team.theme);
-        setProblem(team.problemStatement);
+        setInstitutionAddress(team.institutionAddress);
+        setProblemCategoryCode(team.problemCategoryCode);
+        setProblemOptionType(team.problemOptionType);
+        setProposedProblemStatement(team.proposedProblemStatement ?? "");
+        setExistingIdCardName(team.idCardOriginalName);
 
         const existing = team.members ?? [];
         const leader = existing.find((m: TeamMember) => m.role === "leader");
@@ -619,6 +608,52 @@ export function TeamRegisterPage() {
       while (next.length < n) next.push(emptyMember());
       return next.slice(0, n);
     });
+  };
+
+  const selectedCategory = findProblemCategory(problemCategoryCode);
+
+  // Display-only strings for ConfirmationSummary and the printable summary -
+  // derived the same way the backend derives its `theme`/`problemStatement`
+  // columns (problemStatement.service.ts), so what the participant reviews
+  // matches what actually gets saved.
+  const themeDisplay = selectedCategory ? themeLabel(selectedCategory.theme) : "-";
+  const problemDisplay =
+    problemOptionType === "ps"
+      ? (selectedCategory?.psTitle ?? "-")
+      : problemOptionType === "open"
+        ? proposedProblemStatement || "-"
+        : "-";
+  const idCardDisplay = idCardFile?.name ?? existingIdCardName ?? "-";
+
+  /**
+   * Regional categories have no official PS, so there's nothing to choose -
+   * they're locked to "open" the moment they're picked. National categories
+   * leave the choice to the user (cleared here so switching FROM regional TO
+   * national, or between two national categories, never carries over a
+   * stale "open"/"ps" pick along with its now-irrelevant proposed text).
+   */
+  const handleCategoryChange = (code: string) => {
+    setProblemCategoryCode(code);
+    const category = findProblemCategory(code);
+    setProblemOptionType(category?.theme === "REGIONAL" ? "open" : "");
+    setProposedProblemStatement("");
+  };
+
+  const handleIdCardChange = (file: File | null) => {
+    setIdCardError("");
+    if (!file) {
+      setIdCardFile(null);
+      return;
+    }
+    if (!ID_CARD_ALLOWED_MIME.has(file.type)) {
+      setIdCardError("ID card must be a PDF, JPG, or PNG file.");
+      return;
+    }
+    if (file.size > ID_CARD_MAX_SIZE_BYTES) {
+      setIdCardError("ID card file is too large (max 5 MB).");
+      return;
+    }
+    setIdCardFile(file);
   };
 
   async function saveProfile(): Promise<boolean> {
@@ -706,25 +741,52 @@ export function TeamRegisterPage() {
       return;
     }
 
+    // Mirrors the backend's own rules (team.schema.ts) so a team never
+    // discovers these problems only after a round trip to the server.
+    if (!problemCategoryCode || !problemOptionType) {
+      setError("Choose a category and whether you're taking the official problem statement or proposing your own.");
+      setStep(2);
+      return;
+    }
+    if (problemOptionType === "open" && proposedProblemStatement.trim().length < 10) {
+      setError("Describe the problem you're proposing to solve (at least 10 characters).");
+      setStep(2);
+      return;
+    }
+    if (!idCardFile && !existingIdCardName) {
+      setError("Upload your organisation/institution ID card (PDF, JPG, or PNG).");
+      setStep(3);
+      return;
+    }
+
     setSubmitting(true);
     setError("");
+
+    const problemSelection = {
+      name: teamName,
+      institute,
+      institutionAddress,
+      problemCategoryCode,
+      problemOptionType,
+      ...(problemOptionType === "open" ? { proposedProblemStatement } : {}),
+    };
 
     try {
       let id = teamId;
 
       if (!id) {
-        const { team } = await teamApi.create({
-          name: teamName,
-          institute,
-          theme,
-          problemStatement: problem,
-        });
+        // idCardFile is guaranteed non-null here: the check above already
+        // returned early if both it and existingIdCardName were empty, and
+        // a brand-new team (no teamId yet) can't have an existingIdCardName.
+        const { team } = await teamApi.create(problemSelection, idCardFile!);
         id = team.id;
         setTeamId(id);
       } else {
         // Resumed draft - the create() branch above is skipped, so push any
-        // edits made to team name/institute/theme/problem since it loaded.
-        await teamApi.update(id, { name: teamName, institute, theme, problemStatement: problem });
+        // edits made since it loaded. idCardFile is only passed when the
+        // user chose to replace the card already on file; omitting it
+        // leaves the existing upload untouched (see teamApi.update).
+        await teamApi.update(id, problemSelection, idCardFile ?? undefined);
       }
 
       // Reconcile the local roster against whatever's already on the team
@@ -860,8 +922,10 @@ export function TeamRegisterPage() {
               email={user?.email ?? ""}
               teamName={teamName}
               institute={institute}
-              theme={theme}
-              problem={problem}
+              institutionAddress={institutionAddress}
+              theme={themeDisplay}
+              problem={problemDisplay}
+              idCardName={idCardDisplay}
               teamSize={members.length}
               members={members}
               teamId={existingTeam.id}
@@ -1145,46 +1209,95 @@ export function TeamRegisterPage() {
             {/* ── STEP 2: Category & Participation ── */}
             {step === 2 && (
               <div className="space-y-7 px-6 py-8 sm:px-8">
-                <SectionHeader n={1} icon={Layers} title="Event Track & Domain" />
+                <SectionHeader n={1} icon={Layers} title="Category" />
                 <div className="-mt-5">
-                  <Field label="Theme / Domain" required>
+                  <Field label="Problem Category" required>
                     <select
                       className={selectClass}
-                      value={theme}
-                      onChange={(e) => {
-                        setTheme(e.target.value);
-                        setProblem("");
-                      }}
+                      value={problemCategoryCode}
+                      onChange={(e) => handleCategoryChange(e.target.value)}
                     >
-                      <option value="">Select a theme…</option>
-                      {THEMES.map((t) => (
-                        <option key={t} value={t}>
-                          {t}
-                        </option>
-                      ))}
+                      <option value="">Select a category…</option>
+                      <optgroup label="National Level Innovation">
+                        {PROBLEM_CATEGORIES.filter((c) => c.theme === "NATIONAL").map((c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </optgroup>
+                      <optgroup label="Local Community Level Innovation">
+                        {PROBLEM_CATEGORIES.filter((c) => c.theme === "REGIONAL").map((c) => (
+                          <option key={c.code} value={c.code}>
+                            {c.label}
+                          </option>
+                        ))}
+                      </optgroup>
                     </select>
                   </Field>
                 </div>
 
                 <SectionHeader n={2} icon={ListChecks} title="Problem Statement" />
-                <div className="-mt-5">
-                  <Field label="Problem Statement" required>
-                    <select
-                      className={selectClass}
-                      value={problem}
-                      onChange={(e) => setProblem(e.target.value)}
-                      disabled={!theme}
+                <div className="-mt-5 space-y-4">
+                  {!problemCategoryCode ? (
+                    <p className="text-xs text-gray-400">Pick a category first.</p>
+                  ) : selectedCategory?.theme === "REGIONAL" ? (
+                    // Regional categories have no official PS at all - every
+                    // regional team proposes and solves its own problem, so
+                    // there is no PS/OPEN choice to make here, only the
+                    // proposal text itself.
+                    <p className="text-xs text-gray-500">
+                      This category has no official problem statement - describe the problem
+                      you're proposing to solve below.
+                    </p>
+                  ) : (
+                    <Field label="How do you want to participate?" required>
+                      <div className="flex flex-col gap-2 sm:flex-row">
+                        <button
+                          type="button"
+                          onClick={() => setProblemOptionType("ps")}
+                          className={`flex-1 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-all cursor-pointer ${
+                            problemOptionType === "ps"
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                          }`}
+                        >
+                          Take the official Problem Statement
+                          <span className="mt-0.5 block text-xs font-normal text-gray-400">
+                            {selectedCategory?.psTitle}
+                          </span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setProblemOptionType("open")}
+                          className={`flex-1 rounded-xl border px-4 py-3 text-left text-sm font-semibold transition-all cursor-pointer ${
+                            problemOptionType === "open"
+                              ? "border-primary bg-primary/5 text-primary"
+                              : "border-gray-200 text-gray-600 hover:bg-gray-50"
+                          }`}
+                        >
+                          Propose my own problem
+                          <span className="mt-0.5 block text-xs font-normal text-gray-400">
+                            Identify and solve a problem of your own within this category.
+                          </span>
+                        </button>
+                      </div>
+                    </Field>
+                  )}
+
+                  {problemOptionType === "open" && (
+                    <Field
+                      label="Describe the problem you're proposing to solve"
+                      required
+                      hint="At least 10 characters."
                     >
-                      <option value="">
-                        {theme ? "Select a problem statement…" : "Pick a theme first"}
-                      </option>
-                      {(PROBLEMS_BY_THEME[theme] ?? []).map((p) => (
-                        <option key={p} value={p}>
-                          {p}
-                        </option>
-                      ))}
-                    </select>
-                  </Field>
+                      <textarea
+                        className={`${inputClass} min-h-[110px] resize-y`}
+                        value={proposedProblemStatement}
+                        onChange={(e) => setProposedProblemStatement(e.target.value)}
+                        placeholder="What's the problem, who does it affect, and what's your proposed direction?"
+                      />
+                    </Field>
+                  )}
                 </div>
 
                 <SectionHeader n={3} icon={Users} title="Team Composition" />
@@ -1219,7 +1332,11 @@ export function TeamRegisterPage() {
                   onBack={() => setStep(1)}
                   nextLabel="Next: About Team"
                   onNext={() => setStep(3)}
-                  nextDisabled={!theme || !problem}
+                  nextDisabled={
+                    !problemCategoryCode ||
+                    !problemOptionType ||
+                    (problemOptionType === "open" && proposedProblemStatement.trim().length < 10)
+                  }
                 />
               </div>
             )}
@@ -1244,6 +1361,44 @@ export function TeamRegisterPage() {
                       onChange={(e) => setInstitute(e.target.value)}
                       placeholder="e.g. Delhi Technological University"
                     />
+                  </Field>
+                  <Field
+                    label="Institute / Organisation Address"
+                    required
+                    hint="Postal address of the institution or organisation you're registering under."
+                  >
+                    <textarea
+                      className={`${inputClass} min-h-[80px] resize-y`}
+                      value={institutionAddress}
+                      onChange={(e) => setInstitutionAddress(e.target.value)}
+                      placeholder="Street, city, state, PIN code"
+                    />
+                  </Field>
+                  <Field
+                    label="Organisation ID Card"
+                    required={!existingIdCardName}
+                    hint="PDF, JPG, or PNG · max 5 MB. Institute, staff, or student ID confirming your affiliation."
+                  >
+                    <input
+                      type="file"
+                      accept={ID_CARD_ACCEPT}
+                      onChange={(e) => handleIdCardChange(e.target.files?.[0] ?? null)}
+                      className="block w-full text-sm text-gray-600 file:mr-3 file:rounded-lg file:border-0 file:bg-primary/10 file:px-3 file:py-2 file:text-xs file:font-bold file:text-primary hover:file:bg-primary/20"
+                    />
+                    {idCardFile ? (
+                      <p className="mt-1.5 text-xs font-medium text-emerald-600">
+                        Selected: {idCardFile.name}
+                      </p>
+                    ) : existingIdCardName ? (
+                      <p className="mt-1.5 text-xs text-gray-400">
+                        Currently on file: {existingIdCardName}. Choose a new file to replace it.
+                      </p>
+                    ) : null}
+                    {idCardError && (
+                      <p role="alert" className="mt-1.5 text-xs font-semibold text-primary">
+                        {idCardError}
+                      </p>
+                    )}
                   </Field>
                 </div>
 
@@ -1320,6 +1475,8 @@ export function TeamRegisterPage() {
                   nextDisabled={
                     teamName.trim().length < TEAM_NAME_MIN ||
                     institute.trim().length < INSTITUTE_MIN ||
+                    institutionAddress.trim().length < 5 ||
+                    (!idCardFile && !existingIdCardName) ||
                     members.some((m) => !memberComplete(m))
                   }
                 />
@@ -1335,8 +1492,10 @@ export function TeamRegisterPage() {
                   email={user?.email ?? ""}
                   teamName={teamName}
                   institute={institute}
-                  theme={theme}
-                  problem={problem}
+                  institutionAddress={institutionAddress}
+                  theme={themeDisplay}
+                  problem={problemDisplay}
+                  idCardName={idCardDisplay}
                   teamSize={teamSize}
                   members={members}
                   teamId={teamId}
@@ -1351,16 +1510,7 @@ export function TeamRegisterPage() {
                     className="mt-0.5 accent-primary"
                   />
                   <span className="text-xs leading-relaxed text-gray-500">
-                    I confirm that all details entered are accurate, all team members are eligible
-                    participants, and I agree to the{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      SEWA 2026 Terms &amp; Conditions
-                    </a>{" "}
-                    and{" "}
-                    <a href="#" className="text-primary hover:underline">
-                      Code of Conduct
-                    </a>
-                    .
+                    I hereby confirm that the information and identification documents provided for myself and all team members are accurate and complete to the best of my knowledge. I accept full responsibility for any discrepancies or inaccuracies and understand that the committee reserves the right to reject or disqualify our participation if any information or documents are found to be false, misleading, or inconsistent.
                   </span>
                 </label>
 
@@ -1400,8 +1550,10 @@ export function TeamRegisterPage() {
                   email={user?.email ?? ""}
                   teamName={teamName}
                   institute={institute}
-                  theme={theme}
-                  problem={problem}
+                  institutionAddress={institutionAddress}
+                  theme={themeDisplay}
+                  problem={problemDisplay}
+                  idCardName={idCardDisplay}
                   teamSize={teamSize}
                   members={members}
                   teamId={teamId}

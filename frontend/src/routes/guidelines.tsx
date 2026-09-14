@@ -1,7 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText, MapPin, UsersRound } from "lucide-react";
+import { Download, FileText, MapPin, UsersRound } from "lucide-react";
 import { Footer, Header } from "../components/SewaSite";
-import registrationProcessImage from "../assets/reg_process.png";
+import { ParticipationSteps } from "../components/ParticipationSteps";
+import nationalPptx from "../assets/NATIONAL LEVEL PPT.pptx";
+import nationalPdf from "../assets/NATIONAL LEVEL PPT.pdf";
+import regionalPptx from "../assets/REGIONAL LEVEL PPT.pptx";
+import regionalPdf from "../assets/REGIONAL LEVEL PPT.pdf";
 
 export const Route = createFileRoute("/guidelines")({
   head: () => ({
@@ -16,51 +20,93 @@ export const Route = createFileRoute("/guidelines")({
   component: GuidelinesPage,
 });
 
+const submissionFormats = [
+  {
+    key: "national",
+    title: "National Theme Submission Format",
+    fileName: "NATIONAL LEVEL PPT",
+    pptx: nationalPptx,
+    pdf: nationalPdf,
+  },
+  {
+    key: "regional",
+    title: "Regional Theme Submission Format",
+    fileName: "REGIONAL LEVEL PPT",
+    pptx: regionalPptx,
+    pdf: regionalPdf,
+  },
+];
+
 const eligibilityRows = [
   {
     number: "I",
     category: "School & Vocational",
-    participants: <>Students from <strong>Class X onwards up to ITI level</strong>, participating individually or in teams, with appropriate institutional support.</>,
-    color: "bg-[#4d9bea]",
-    background: "bg-[#edf5fc]",
+    participants: (
+      <>
+        Students from <strong className="font-bold text-[#14234B]">Class X onwards up to ITI level</strong>, participating individually or in teams, with appropriate institutional support.
+      </>
+    ),
+    badgeBg: "bg-[#5294E2]",
+    rowBg: "bg-[#F0F7FF]",
+    boldDesc: false,
   },
   {
     number: "II",
     category: "Diploma & Higher Education",
-    participants: <>Students/teams from <strong>Diploma, Undergraduate, Postgraduate and Ph.D. programmes</strong>, including technical and non-technical institutions.</>,
-    color: "bg-[#4eb27c]",
-    background: "bg-[#edf9f1]",
+    participants: (
+      <>
+        Students/teams from <strong className="font-bold text-[#14234B]">Diploma, Undergraduate, Postgraduate and Ph.D. programmes</strong>, including technical and non-technical institutions.
+      </>
+    ),
+    badgeBg: "bg-[#52AB77]",
+    rowBg: "bg-[#EFF9F3]",
+    boldDesc: false,
   },
   {
     number: "III",
     category: "Industry & Government",
-    participants: <><strong>Urban/Rural industries, MSMEs, startups, R&amp;D organisations and Government laboratories,</strong> participating individually or through collaborative teams.</>,
-    color: "bg-[#f0a23d]",
-    background: "bg-[#fff8ed]",
+    participants: (
+      <>
+        Urban/Rural industries, MSMEs, startups, R&amp;D organisations and Government laboratories, participating individually or through collaborative teams.
+      </>
+    ),
+    badgeBg: "bg-[#F39C42]",
+    rowBg: "bg-[#FFF8EE]",
+    boldDesc: true,
   },
 ];
 
-const eligibilityDetails = [
+const eligibilityCards = [
   {
-    number: "IV",
+    key: "participation",
     category: "Participation",
-    participants: <>Individuals, groups/teams and eligible organisations may participate, subject to the specific requirements of each challenge.</>,
-    color: "bg-[#7776c9]",
-    background: "bg-[#f2f1fc]",
+    text: "Individuals, groups/teams and eligible organisations may participate, subject to the specific requirements of each challenge.",
+    cardBg: "bg-[#F3F4FE]",
+    badgeBg: "bg-[#ECEFFD]",
+    titleColor: "text-[#14234B]",
+    icon: <UsersRound className="size-6 text-[#5861B5]" strokeWidth={2.2} />,
   },
   {
-    number: "V",
+    key: "applicability",
     category: "Applicability",
-    participants: <>In general, the same three participant categories will be applicable to both <strong>National-Level</strong> and <strong>Local-Level Challenges</strong>, however, may vary depending upon the problem statement.</>,
-    color: "bg-[#45a77d]",
-    background: "bg-[#edf9f4]",
+    text: (
+      <>
+        In general, the same three participant categories will be applicable to both <strong className="font-bold text-[#14234B]">National-Level</strong> and <strong className="font-bold text-[#14234B]">Local-Level Challenges</strong>, however, may vary depending upon the problem statement.
+      </>
+    ),
+    cardBg: "bg-[#EFF9F4]",
+    badgeBg: "bg-[#DCF2E4]",
+    titleColor: "text-[#10653D]",
+    icon: <FileText className="size-6 text-[#147A46]" strokeWidth={2.2} />,
   },
   {
-    number: "VI",
+    key: "northern-region",
     category: "Northern Region COORDINATION",
-    participants: <>Participants from Jammu &amp; Kashmir, Ladakh, Himachal Pradesh, Uttarakhand, Chandigarh, NCT of Delhi, Punjab, Haryana and Uttar Pradesh are eligible to participate under the Northern Region coordinated by DTU.</>,
-    color: "bg-[#e8a1a8] text-[#8d2535]",
-    background: "bg-[#fff2f2]",
+    text: "Participants from Jammu & Kashmir, Ladakh, Himachal Pradesh, Uttarakhand, Chandigarh, NCT of Delhi, Punjab, Haryana and Uttar Pradesh are eligible to participate under the Northern Region coordinated by DTU.",
+    cardBg: "bg-[#FFF4F4]",
+    badgeBg: "bg-[#F2DCDC]",
+    titleColor: "text-[#F53838]",
+    icon: <MapPin className="size-6 text-[#7A1414]" strokeWidth={2.2} />,
   },
 ];
 
@@ -72,68 +118,142 @@ function GuidelinesPage() {
       <Header activeNav="guidelines" />
 
       <main className="t-section-stack site-shell max-w-[1200px] py-10 sm:py-16">
-        <section aria-labelledby="eligibility-heading">
-          <h1 id="eligibility-heading" className={sectionHeadingClass}>Eligibility</h1>
-          <div className="overflow-hidden bg-white">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[760px] text-left text-[11px] leading-[1.35] sm:text-xs">
-                <thead className="bg-[#f2f6fb] font-bold text-[#15213a]">
-                  <tr>
-                    <th className="w-14 px-3 py-2 text-center">#</th>
-                    <th className="w-[27%] px-3 py-2">Category</th>
-                    <th className="px-3 py-2">Eligible Participants</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {eligibilityRows.map((row) => (
-                    <tr key={row.number} className={`${row.background} border-t-4 border-white`}>
-                      <td className="px-3 py-3 text-center"><span className={`inline-flex size-5 items-center justify-center rounded-full text-[8px] font-bold text-white ${row.color}`}>{row.number}</span></td>
-                      <th scope="row" className="px-3 py-3 font-bold text-[#15213a]">{row.category}</th>
-                      <td className="px-3 py-3 text-[#33415c]">{row.participants}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <section aria-labelledby="eligibility-heading" className="w-full">
+          <h1 id="eligibility-heading" className={`${sectionHeadingClass} text-center`}>
+            ELIGIBILITY
+          </h1>
+          <div className="w-full max-w-[1180px] mx-auto flex flex-col gap-[14px]">
+            {/* Table Header & Category Rows with horizontal scroll protection on mobile */}
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <div className="min-w-[880px] md:min-w-0 flex flex-col gap-[14px]">
+                {/* Table Column Headers */}
+                <div className="w-full min-h-[58px] bg-[#EBF1F8] rounded-[16px] grid grid-cols-[115px_330px_1fr] items-center py-2">
+                  <div className="t-content flex items-center justify-center font-bold! text-[#334155]">
+                    #
+                  </div>
+                  <div className="t-content pl-[24px] font-bold! text-[#1F2D48]">
+                    Category
+                  </div>
+                  <div className="t-content pl-[32px] pr-5 font-bold! text-[#1F2D48]">
+                    Eligible Participants
+                  </div>
+                </div>
+
+                {/* Category Rows */}
+                {eligibilityRows.map((row) => (
+                  <article
+                    key={row.number}
+                    className={`w-full min-h-[88px] ${row.rowBg} rounded-[16px] grid grid-cols-[115px_330px_1fr] items-center py-4`}
+                  >
+                    <div className="flex items-center pl-[20px]">
+                      <div
+                        className={`size-[52px] ${row.badgeBg} rounded-full flex items-center justify-center text-white font-bold text-[20px] leading-none shadow-[0px_1px_2px_rgba(0,0,0,0.05)]`}
+                      >
+                        {row.number}
+                      </div>
+                    </div>
+                    <div className="pl-[24px] pr-4 h-full flex items-center border-r border-black/[0.04]">
+                      <h3 className="t-content font-bold! text-[#112347]">
+                        {row.category}
+                      </h3>
+                    </div>
+                    <div className="pl-[32px] pr-5 flex items-center">
+                      <p
+                        className={`t-content ${row.boldDesc ? "font-bold! text-[#14234B]" : "text-[#475569]"}`}
+                      >
+                        {row.participants}
+                      </p>
+                    </div>
+                  </article>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="mt-4 space-y-4">
-            {eligibilityDetails.map((detail) => (
-              <article key={detail.number} className={`flex items-start gap-4 rounded-2xl px-5 py-5 sm:gap-6 sm:px-8 sm:py-6 ${detail.background}`}>
-                <span className={`mt-0.5 inline-flex size-11 shrink-0 items-center justify-center rounded-full text-sm font-bold ${detail.color}`}>
-                  {detail.number === "IV" ? <UsersRound size={21} strokeWidth={2.4} /> : detail.number === "V" ? <FileText size={21} strokeWidth={2.4} /> : <MapPin size={21} strokeWidth={2.4} />}
-                </span>
-                <div className="min-w-0 border-l border-[#dce3ef] pl-5 sm:pl-6">
-                  <h3 className={`text-base font-extrabold ${detail.number === "VI" ? "text-[#e12d43]" : detail.number === "V" ? "text-[#087346]" : "text-[#172554]"}`}>{detail.category}</h3>
-                  <p className="mt-1 text-sm leading-[1.45] text-[#465875]">{detail.participants}</p>
+
+            {/* Info Cards */}
+            {eligibilityCards.map((card) => (
+              <article
+                key={card.key}
+                className={`w-full ${card.cardBg} min-h-[100px] sm:min-h-[112px] rounded-[16px] p-4 sm:p-6 flex flex-row items-center gap-3.5 sm:gap-6`}
+              >
+                <div
+                  className={`size-[46px] sm:size-[56px] ${card.badgeBg} rounded-full flex items-center justify-center shrink-0 shadow-[0px_1px_2px_rgba(0,0,0,0.05)]`}
+                >
+                  {card.icon}
+                </div>
+                <div className="w-[1px] self-stretch bg-[#E2E8F0] shrink-0" aria-hidden="true" />
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
+                  <h3 className={`t-content font-bold! ${card.titleColor}`}>
+                    {card.category}
+                  </h3>
+                  <div className="t-content text-[#475569]">
+                    {card.text}
+                  </div>
                 </div>
               </article>
             ))}
           </div>
         </section>
 
-        <section aria-labelledby="participate-heading">
-          <h2 id="participate-heading" className={sectionHeadingClass}>How to participate</h2>
-          <p className="t-content w-full text-justify text-black">
-  Eligible participants can take part in the SEWA First RYIC 2026 through the structured registration journey, designed to guide them from identifying a challenge to presenting their innovation.<br />
-  The registration process and key steps are outlined below:
-</p>
-          <div className="mt-6 overflow-hidden rounded-xl bg-white p-3 shadow-[0_8px_28px_rgba(27,44,79,0.08)] sm:mt-8 sm:p-7">
-            <img src={registrationProcessImage} alt="SEWA 2026 registration process" className="mx-auto h-auto w-full" />
-          </div>
+        <section aria-labelledby="participate-heading" className="w-full">
+          <h2 id="participate-heading" className={sectionHeadingClass}>
+            How to participate
+          </h2>
+          <p className="t-content w-full text-left sm:text-justify text-black mb-6 sm:mb-8 [hyphens:none]">
+            Eligible participants can take part in the SEWA First RYIC 2026 through the structured registration journey, designed to guide them from identifying a challenge to presenting their innovation.
+            <br className="hidden sm:inline" />
+            {" "}The registration process and key steps are outlined below:
+          </p>
+
+          <ParticipationSteps />
         </section>
 
-        <section aria-labelledby="submission-heading">
-          <h2 id="submission-heading" className={sectionHeadingClass}>Submission format</h2>
-          <p className="t-content w-full text-justify text-black">Participants are required to submit their innovation proposal in the prescribed 15-slide presentation format. The presentation should be concise, structured and focused on demonstrating the journey from problem identification to innovation, prototype development and potential impact. The prescribed slide format is appended for reference</p>
-          <div className="mt-12 grid gap-8 text-base font-bold text-[#172554] sm:grid-cols-2 sm:gap-12 sm:pt-4">
-            <h3>PPT FOR NATIONAL THEME</h3>
-            <h3>PPT FOR REGIONAL THEME</h3>
-          </div>
-        </section>
+        <section aria-labelledby="submission-heading" className="w-full">
+          <h2 id="submission-heading" className={sectionHeadingClass}>
+            Submission format
+          </h2>
+          <p className="t-content w-full text-left sm:text-justify text-black mb-6 sm:mb-8 [hyphens:none]">
+            Participants are required to submit their innovation proposal in the prescribed 15-slide presentation format. The presentation should be concise, structured and focused on demonstrating the journey from problem identification to innovation, prototype development and potential impact. The prescribed slide format is appended for reference
+          </p>
 
-        <section aria-labelledby="execution-heading">
-          <h2 id="execution-heading" className={sectionHeadingClass}>Execution</h2>
-          <p className="t-content w-full text-justify text-black"><strong>Delhi Technological University (DTU)</strong> is the designated Regional Coordinator for the Northern Region for the SEWA FIRST – Rashtriya Youth Innovation Challenge 2026. DTU will facilitate and coordinate participation, innovation activities and engagement of educational institutions, innovators, mentors and other stakeholders across the region, supporting the journey from problem identification and ideation to prototyping, validation and impact. Participants from <strong>Jammu &amp; Kashmir, Ladakh, Himachal Pradesh, Uttarakhand, Chandigarh, NCT of Delhi, Punjab, Haryana and Uttar Pradesh</strong> are eligible to participate under the Northern Region coordinated by DTU.</p>
+          <div className="w-full max-w-[1180px] mx-auto flex flex-col gap-4">
+            {submissionFormats.map((format) => (
+              <div
+                key={format.key}
+                className="w-full bg-white border border-[#F1F5F9] rounded-[16px] p-4 sm:px-6 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-[0px_2px_8px_rgba(0,0,0,0.02)]"
+              >
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="relative w-11 h-14 bg-[#EA4335] rounded-lg flex flex-col items-center justify-center text-white shadow-sm shrink-0">
+                    <div className="absolute top-0 right-0 w-3 h-3 bg-[#D93025] rounded-bl" />
+                    <span className="text-[10px] font-black tracking-wider mt-1">PPT</span>
+                  </div>
+                  <h3 className="t-content font-bold! text-[#112347]">{format.title}</h3>
+                </div>
+
+                <div className="flex items-center gap-3 self-end sm:self-auto shrink-0">
+                  {/*
+                    `download` with an explicit filename keeps the original name
+                    rather than the hashed one Vite emits at build time.
+                  */}
+                  <a
+                    href={format.pptx}
+                    download={`${format.fileName}.pptx`}
+                    className="t-content inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#FFF1F2] text-[#E11D48] hover:bg-[#FFE4E6] font-semibold! transition-colors"
+                  >
+                    <Download className="size-5" strokeWidth={2.2} />
+                    <span>PPT</span>
+                  </a>
+                  <a
+                    href={format.pdf}
+                    download={`${format.fileName}.pdf`}
+                    className="t-content inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#EFF6FF] text-[#1D4ED8] hover:bg-[#DBEAFE] font-semibold! transition-colors"
+                  >
+                    <Download className="size-5" strokeWidth={2.2} />
+                    <span>PDF</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
         </section>
       </main>
 

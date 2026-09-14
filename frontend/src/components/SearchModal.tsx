@@ -202,7 +202,7 @@ export function SearchModal({ open, onClose }: SearchModalProps) {
       // Route + anchor, e.g. "/problem-statements#national" - TanStack Router
       // needs these passed as separate `to` and `hash` values.
       const [to, hash] = item.href.split("#");
-      navigate({ to, hash });
+      navigate({ to: (to || "/") as any, hash: hash || undefined } as any);
     } else {
       navigate({ to: item.href });
     }

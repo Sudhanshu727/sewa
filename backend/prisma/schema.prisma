@@ -110,12 +110,63 @@ model OtpVerification {
   @@map("otp_verifications")
 }
 
+// PS = the official problem statement we supply for that category (national
+// categories only). OPEN = the team proposes and solves its own problem
+// within the category (the only option regional categories offer).
+enum ProblemOptionType {
+  ps
+  open
+}
+
+// Assigns the sequential "-OP-NNN" suffix atomically per category, e.g.
+// NAT-001-OP-001, NAT-001-OP-002 ... The row is upserted with lastSeq
+// incremented inside a transaction, which Postgres serialises on the row's
+// primary key - two concurrent submissions for the same category cannot be
+// assigned the same sequence number. See problemStatement.service.ts.
+model ProblemStatementCounter {
+  categoryCode String   @id @map("category_code") @db.VarChar(20)
+  lastSeq      Int      @default(0) @map("last_seq")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("problem_statement_counters")
+}
+
 model Team {
   id               String  @id @default(uuid())
   name             String  @db.VarChar(150)
   institute        String  @db.VarChar(200)
+  // Free text describing the org/institute/school's postal address, so the
+  // physical location of a team's affiliation is on record (e.g. for
+  // regional-hub logistics, verification, or dispatch of physical material).
+  institutionAddress String @map("institution_address") @db.VarChar(300)
   theme            String  @db.VarChar(150)
   problemStatement String  @map("problem_statement") @db.VarChar(200)
+  // Structured problem-selection fields, validated server-side against the
+  // PROBLEM_CATEGORIES catalogue (see config/problemCategories.ts) rather
+  // than trusted as arbitrary client text - this is what makes `theme` and
+  // `problemStatement` above trustworthy: both are now DERIVED from these,
+  // not accepted verbatim from the request body. Kept as plain columns
+  // rather than a relational category table since the catalogue is a small,
+  // static, per-season list edited in code alongside the frontend's own
+  // copy of it - promote to a real table if categories start changing
+  // between seasons or need to be admin-editable.
+  problemCategoryCode      String            @map("problem_category_code") @db.VarChar(20)
+  problemOptionType        ProblemOptionType @map("problem_option_type")
+  // Required (and only meaningful) when problemOptionType = open; NULL when
+  // = ps. Enforced both in Zod (schemas/team.schema.ts) and by a DB CHECK
+  // constraint (see migration) so this can't be left inconsistent even by a
+  // future direct DB write that skips the API.
+  proposedProblemStatement String?           @map("proposed_problem_statement") @db.VarChar(500)
+  // The final assigned ID: "NAT-001-PS" for an official PS (shared by every
+  // team that picks it - NOT unique), or "NAT-001-OP-003" for an open
+  // proposal (unique by construction via ProblemStatementCounter).
+  problemStatementId       String            @map("problem_statement_id") @db.VarChar(40)
+  // Uploaded organisation/institution ID card (PDF or image). Path is a
+  // server-relative path under env.UPLOAD_DIR, never a client-supplied
+  // value - see middleware/upload.middleware.ts.
+  idCardPath         String  @map("id_card_path") @db.VarChar(500)
+  idCardMimeType     String  @map("id_card_mime_type") @db.VarChar(100)
+  idCardOriginalName String? @map("id_card_original_name") @db.VarChar(255)
   leaderUserId     String  @map("leader_user_id")
   leader       User       @relation("TeamLeader", fields: [leaderUserId], references: [id])
   status       TeamStatus @default(draft)
@@ -187,3 +238,22 @@ model ContactMessage {
   @@index([status, createdAt])
   @@map("contact_messages")
 }
+
+/**
+ * A public-facing notice/announcement item displayed on the homepage.
+ * Created by admins; read publicly without auth via GET /api/announcements.
+ */
+model Announcement {
+  id          String   @id @default(uuid())
+  refNumber   String?  @map("ref_number") @db.VarChar(50)
+  category    String   @db.VarChar(60)
+  title       String   @unique @db.VarChar(200)
+  summary     String   @db.Text
+  detail      String?  @db.Text
+  publishedAt DateTime @default(now()) @map("published_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([publishedAt(sort: Desc)])
+  @@map("announcements")
+}
+

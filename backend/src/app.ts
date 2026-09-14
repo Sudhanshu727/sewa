@@ -22,7 +22,11 @@ app.use(
     credentials: true, // required for the httpOnly session cookie
   }),
 );
-app.use(express.json({ limit: "20kb" })); // small limit: this API takes no file uploads
+// Small limit: applies only to JSON requests. Team registration takes an ID
+// card upload via multipart/form-data instead, which multer parses directly
+// (see routes/team.routes.ts + middleware/upload.middleware.ts) and never
+// passes through this JSON body parser at all.
+app.use(express.json({ limit: "20kb" }));
 app.use(cookieParser());
 app.use(pinoHttp({ logger }));
 

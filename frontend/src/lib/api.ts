@@ -41,7 +41,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
       ...init,
       credentials: "include",
       headers: {
-        ...(init.body ? { "Content-Type": "application/json" } : {}),
+        // FormData bodies (team registration's ID card upload) must NOT get
+        // an explicit Content-Type: the browser sets one itself, including
+        // the multipart boundary, and setting it manually breaks parsing on
+        // the server. JSON bodies still get it as before.
+        ...(init.body && !(init.body instanceof FormData) ? { "Content-Type": "application/json" } : {}),
         ...init.headers,
       },
     });
@@ -74,6 +78,26 @@ const post = <T>(path: string, body?: unknown) =>
     body === undefined ? { method: "POST" } : { method: "POST", body: JSON.stringify(body) },
   );
 
+/**
+ * Builds the multipart/form-data body team create/update need: every field
+ * as a string, plus the ID card file under the "idCard" key that the
+ * backend's multer middleware expects (see backend upload.middleware.ts).
+ * The file is optional here because it's optional on update - required-ness
+ * is enforced server-side (and, separately, in the registration form's own
+ * client-side validation before it ever calls this).
+ */
+function buildTeamFormData(
+  fields: Record<string, string | undefined>,
+  idCard: File | undefined,
+): FormData {
+  const form = new FormData();
+  for (const [key, value] of Object.entries(fields)) {
+    if (value !== undefined) form.append(key, value);
+  }
+  if (idCard) form.append("idCard", idCard);
+  return form;
+}
+
 // ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface User {
@@ -100,8 +124,17 @@ export interface Team {
   id: string;
   name: string;
   institute: string;
+  institutionAddress: string;
+  /** Human-readable theme label, server-derived from problemCategoryCode. */
   theme: string;
+  /** Server-derived: the official PS title, or the team's own proposed text. */
   problemStatement: string;
+  problemCategoryCode: string;
+  problemOptionType: "ps" | "open";
+  proposedProblemStatement: string | null;
+  /** e.g. "NAT-001-PS" or "NAT-001-OP-003" - see backend problemStatement.service.ts. */
+  problemStatementId: string;
+  idCardOriginalName: string | null;
   status: TeamStatus;
   submittedAt: string | null;
   members?: TeamMember[];
@@ -183,21 +216,43 @@ export const authApi = {
 
 // ─── Team registration ──────────────────────────────────────────────────────
 
+/**
+ * Fields the backend actually accepts for team create/update, since the
+ * schema migration in team.schema.ts: theme and problemStatement are no
+ * longer sent directly - the server derives both from category + option
+ * type (see backend/src/services/problemStatement.service.ts). Sending the
+ * old `theme`/`problemStatement` shape here would 400 with "Unrecognized
+ * key(s)" against the backend's `.strict()` schema.
+ */
+export interface TeamProblemSelectionInput {
+  name: string;
+  institute: string;
+  institutionAddress: string;
+  problemCategoryCode: string;
+  problemOptionType: "ps" | "open";
+  /** Required by the backend when problemOptionType is "open"; omit for "ps". */
+  proposedProblemStatement?: string;
+}
+
 export const teamApi = {
-  create: (input: { name: string; institute: string; theme: string; problemStatement: string }) =>
-    post<{ team: Team }>("/api/register", input),
+  /** idCard is required on create - the backend 400s without one. */
+  create: (input: TeamProblemSelectionInput, idCard: File) =>
+    request<{ team: Team }>("/api/register", {
+      method: "POST",
+      body: buildTeamFormData({ ...input }, idCard),
+    }),
 
   /** Returns `{ team: null }` when the signed-in user hasn't created one. */
   getMine: () => request<{ team: Team | null }>("/api/register/me"),
 
-  /** Draft-only - 409s once the team has been submitted. */
-  update: (
-    teamId: string,
-    input: { name: string; institute: string; theme: string; problemStatement: string },
-  ) =>
+  /**
+   * Draft-only - 409s once the team has been submitted. idCard is optional:
+   * omit it to leave the previously uploaded card as-is.
+   */
+  update: (teamId: string, input: TeamProblemSelectionInput, idCard?: File) =>
     request<{ team: Team }>(`/api/register/${teamId}`, {
       method: "PATCH",
-      body: JSON.stringify(input),
+      body: buildTeamFormData({ ...input }, idCard),
     }),
 
   addMember: (
@@ -251,3 +306,20 @@ export const contactApi = {
   submit: (input: ContactMessageInput) =>
     post<{ message: string }>("/api/contact", input),
 };
+
+// ─── Announcements ───────────────────────────────────────────────────────────
+
+export interface Announcement {
+  id: string;
+  refNumber?: string | null;
+  category: string;
+  title: string;
+  summary: string;
+  detail?: string | null;
+  publishedAt: string;
+}
+
+export const announcementsApi = {
+  list: () => request<Announcement[]>("/api/announcements"),
+};
+

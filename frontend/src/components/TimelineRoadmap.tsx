@@ -18,21 +18,65 @@ import { useEffect, useRef, useState } from "react";
  */
 
 const STAGE_WIDTH = 1400;
-const STAGE_HEIGHT = 760;
+const STAGE_HEIGHT = 700;
 
 /*
- * Pin geometry in plain pixels. Tailwind's rem-based sizes are NOT safe here:
- * the site sets html{font-size:18px}, so w-44 resolves to 198px, not the 176px
- * the source markup assumed. Inside a fixed coordinate stage that silently
- * breaks the collision math, so everything below is sized in px.
+ * Geometry in plain pixels. Tailwind's rem-based sizes are NOT safe here: the
+ * site sets html{font-size:18px}, so w-44 resolves to 198px, not the 176px the
+ * source markup assumed. Inside a fixed coordinate stage that silently breaks
+ * the spacing math, so everything below is sized in px.
  */
-const PIN = 176;
-const PIN_INNER = 128;
-const STEM_H = 144;
-const STEM_W = 18;
+const PIN = 150;
+const PIN_INNER = 108;
+const STEM_H = 140;
+const STEM_W = 16;
+const NODE = 36;
+const NODE_INNER = 18;
 
-/** y of the top of the horizontal bar. */
-const BAR_TOP = 345;
+/** y of the top of the horizontal bar, and its thickness. */
+const BAR_TOP = 330;
+const BAR_H = 16;
+
+/*
+ * Each step is one column: the pin hangs on one side of the bar and the step's
+ * text sits directly opposite, both centred on the same x. Consecutive steps
+ * alternate sides, so every row carries pins and text in turn and a text block
+ * only ever has to clear its NEIGHBOURS' pins.
+ *
+ * With six evenly spaced nodes the gap between them is 233px, so a text block
+ * and a neighbouring pin need half-widths summing to less than that:
+ *   PIN/2 + TEXT_W/2 = 75 + 110 = 185 < 233, leaving 48px of clearance.
+ * Widening either constant past that pushes text under a pin.
+ */
+const TEXT_W = 220;
+
+/*
+ * The bar is six equal colour segments and each step's node sits at the centre
+ * of its own segment. Deriving both from the index keeps the colour changes
+ * evenly spaced — the hand-written segment widths this replaces (20/17/21/18/
+ * 13/11) never lined up with the node positions, so the bands read as uneven.
+ */
+const COLUMNS = 6;
+const nodeLeft = (i: number) => `${((i + 0.5) / COLUMNS) * 100}%`;
+
+/** Where the pin badge starts, by side. */
+const PIN_TOP_ABOVE = BAR_TOP - STEM_H - PIN;
+const PIN_TOP_BELOW = BAR_TOP + BAR_H;
+
+/*
+ * Gap between the bar and the nearest edge of a text block. Blocks below the
+ * bar are anchored by their top edge; blocks above it are anchored by their
+ * BOTTOM edge, so both sit the same distance from the bar no matter how many
+ * lines they run to. Anchoring the upper blocks by `top` instead would leave
+ * a ragged gap that grows with every line removed.
+ */
+const TEXT_GAP = 26;
+const TEXT_BOTTOM_ABOVE = STAGE_HEIGHT - BAR_TOP + TEXT_GAP;
+const TEXT_TOP_BELOW = BAR_TOP + BAR_H + TEXT_GAP;
+
+/** Large display number, tucked beside its own stem. */
+const NUMBER_TOP_ABOVE = BAR_TOP - STEM_H + 40;
+const NUMBER_TOP_BELOW = BAR_TOP + BAR_H + 40;
 
 type Step = {
   number: string;
@@ -40,19 +84,8 @@ type Step = {
   dates: string;
   body: string;
   color: string;
-  /** Share of the bar's width this step's colour segment occupies. */
-  segment: number;
-  /** Horizontal position of the node dot on the bar. */
-  nodeLeft: string;
   /** Whether the pin hangs below the bar or sits above it. */
   side: "below" | "above";
-  /** Position of the large display number. */
-  numberLeft: string;
-  numberTop: number;
-  /** Position of the text block. */
-  textLeft: string;
-  textTop: number;
-  textWidth: number;
   icon: React.ReactNode;
 };
 
@@ -71,17 +104,10 @@ const steps: Step[] = [
   {
     number: "01",
     title: "Ideate",
-    dates: "Days 1–15 • 15 Sep – 1 Oct 2026",
+    dates: "Days 1–15 • 19 Sep – 1 Oct 2026",
     body: "Launch of 50 National Problem Statements, online orientation, team registrations, and idea submissions.",
     color: "#F25C22",
-    segment: 20,
-    nodeLeft: "14%",
     side: "below",
-    numberLeft: "17%",
-    numberTop: 385,
-    textLeft: "21.14%",
-    textTop: 540,
-    textWidth: 210,
     icon: (
       <svg {...stroke}>
         <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
@@ -96,14 +122,7 @@ const steps: Step[] = [
     dates: "Days 16–30 • 2 – 16 Oct 2026",
     body: "Preliminary eligibility scrutiny, regional screening, and announcement of shortlisted teams.",
     color: "#EFA00B",
-    segment: 17,
-    nodeLeft: "29%",
     side: "above",
-    numberLeft: "32%",
-    numberTop: 255,
-    textLeft: "3%",
-    textTop: 90,
-    textWidth: 215,
     icon: (
       <svg {...stroke}>
         <circle cx="11" cy="11" r="7" />
@@ -117,14 +136,7 @@ const steps: Step[] = [
     dates: "Days 31–60 • 17 Oct – 15 Nov 2026",
     body: "Expert bootcamps, laboratory/maker-space access, design reviews, and working prototype fabrication.",
     color: "#48BF43",
-    segment: 21,
-    nodeLeft: "43%",
     side: "below",
-    numberLeft: "46%",
-    numberTop: 385,
-    textLeft: "50.14%",
-    textTop: 540,
-    textWidth: 200,
     icon: (
       <svg {...stroke}>
         <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
@@ -137,14 +149,7 @@ const steps: Step[] = [
     dates: "Days 61–80 • 16 Nov – 5 Dec 2026",
     body: "Technical benchmarking, safety/reliability testing, and performance validation.",
     color: "#00B4D8",
-    segment: 18,
-    nodeLeft: "57.5%",
     side: "above",
-    numberLeft: "60.5%",
-    numberTop: 255,
-    textLeft: "36.14%",
-    textTop: 90,
-    textWidth: 200,
     icon: (
       <svg {...stroke}>
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
@@ -158,14 +163,7 @@ const steps: Step[] = [
     dates: "Days 81–95 • 6 – 20 Dec 2026",
     body: "Field demonstrations in real environments, usability testing, and cost/sustainability reviews.",
     color: "#0077B6",
-    segment: 13,
-    nodeLeft: "71.5%",
     side: "below",
-    numberLeft: "74.5%",
-    numberTop: 385,
-    textLeft: "79%",
-    textTop: 540,
-    textWidth: 235,
     icon: (
       <svg {...stroke}>
         <path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z" />
@@ -181,14 +179,7 @@ const steps: Step[] = [
     dates: "Days 96–100 • 21 – 25 Dec 2026",
     body: "Final report submissions and Regional Jury evaluations to nominate finalists for Delhi.",
     color: "#7B2CBF",
-    segment: 11,
-    nodeLeft: "85.5%",
     side: "above",
-    numberLeft: "78.2%",
-    numberTop: 255,
-    textLeft: "64.29%",
-    textTop: 90,
-    textWidth: 195,
     icon: (
       <svg {...stroke}>
         <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
@@ -202,7 +193,7 @@ const steps: Step[] = [
   },
 ];
 
-function Pin({ step }: { step: Step }) {
+function Pin({ step, index }: { step: Step; index: number }) {
   const badge = (
     <div
       className="rounded-full flex items-center justify-center pin-shadow relative transition-transform duration-300 hover:scale-105"
@@ -222,7 +213,7 @@ function Pin({ step }: { step: Step }) {
   return (
     <div
       className="absolute -translate-x-1/2 z-20 flex flex-col items-center"
-      style={{ left: step.nodeLeft, top: step.side === "below" ? 354 : 80 }}
+      style={{ left: nodeLeft(index), top: step.side === "below" ? PIN_TOP_BELOW : PIN_TOP_ABOVE }}
     >
       {step.side === "below" ? (
         <>
@@ -318,92 +309,89 @@ export function TimelineRoadmap() {
         role="img"
         aria-label="Timeline of the 100 day journey: Ideate, Screen, Build, Validate, Test, Select"
       >
-        <div
-          className="relative select-none"
-          style={{
-            width: STAGE_WIDTH,
-            height: STAGE_HEIGHT,
-            transformOrigin: "top left",
-            transform: `scale(${scale})`,
-          }}
-        >
-          {/* Continuous segmented bar */}
-          <div className="absolute left-0 w-full h-[18px] flex z-10" style={{ top: BAR_TOP }}>
-            {steps.map((step) => (
-              <div
-                key={step.number}
-                className="h-full"
-                style={{ width: `${step.segment}%`, backgroundColor: step.color }}
-              />
-            ))}
-          </div>
-
-          {/* Node dots on the bar */}
+        {/* Continuous segmented bar */}
+        <div className="absolute left-0 w-full flex z-10" style={{ top: BAR_TOP, height: BAR_H }}>
           {steps.map((step) => (
             <div
-              key={`node-${step.number}`}
-              className="absolute -translate-x-1/2 z-30 flex flex-col items-center"
-              style={{ left: step.nodeLeft, top: BAR_TOP - 11 }}
-            >
-              <div
-                className="rounded-full flex items-center justify-center shadow-md"
-                style={{ width: 40, height: 40, backgroundColor: step.color }}
-              >
-                <div className="rounded-full bg-white node-dot-shadow" style={{ width: 20, height: 20 }} />
-              </div>
-            </div>
-          ))}
-
-          {/* Pins and stems */}
-          {steps.map((step) => (
-            <Pin key={`pin-${step.number}`} step={step} />
-          ))}
-
-          {/* Large display numbers */}
-          {steps.map((step) => (
-            <div
-              key={`num-${step.number}`}
-              className="absolute z-20 select-none pointer-events-none"
-              style={{ left: step.numberLeft, top: step.numberTop }}
-            >
-              <span
-                className="font-black tracking-tight"
-                style={{ color: step.color, fontSize: 44, lineHeight: 1 }}
-              >
-                {step.number}
-              </span>
-            </div>
-          ))}
-
-          {/* Text blocks */}
-          {steps.map((step) => (
-            <div
-              key={`text-${step.number}`}
-              className="absolute z-40 text-left [hyphens:none]"
-              style={{ left: step.textLeft, top: step.textTop, width: step.textWidth }}
-            >
-              <p
-                className="flex items-center gap-2 text-left font-black tracking-tight text-[#0f172a] uppercase [hyphens:none]"
-                style={{ fontSize: 22, lineHeight: 1.2 }}
-              >
-                <span style={{ color: step.color }}>{step.number}</span>
-                {step.title}
-              </p>
-              <p
-                className="mt-1 text-left font-bold text-slate-800 [hyphens:none]"
-                style={{ fontSize: 12.5, lineHeight: 1.4 }}
-              >
-                {step.dates}
-              </p>
-              <p
-                className="mt-1 text-left font-medium text-slate-700 [hyphens:none]"
-                style={{ fontSize: 14, lineHeight: 1.5 }}
-              >
-                {step.body}
-              </p>
-            </div>
+              key={step.number}
+              className="h-full"
+              style={{ width: `${100 / COLUMNS}%`, backgroundColor: step.color }}
+            />
           ))}
         </div>
+
+        {/* Node dots on the bar */}
+        {steps.map((step, i) => (
+          <div
+            key={`node-${step.number}`}
+            className="absolute -translate-x-1/2 z-30 flex flex-col items-center"
+            style={{ left: nodeLeft(i), top: BAR_TOP + BAR_H / 2 - NODE / 2 }}
+          >
+            <div
+              className="rounded-full flex items-center justify-center shadow-md"
+              style={{ width: NODE, height: NODE, backgroundColor: step.color }}
+            >
+              <div className="rounded-full bg-white node-dot-shadow" style={{ width: NODE_INNER, height: NODE_INNER }} />
+            </div>
+          </div>
+        ))}
+
+        {/* Pins and stems */}
+        {steps.map((step, i) => (
+          <Pin key={`pin-${step.number}`} step={step} index={i} />
+        ))}
+
+        {/* Large display numbers */}
+        {steps.map((step, i) => (
+          <div
+            key={`num-${step.number}`}
+            className="absolute z-20 select-none pointer-events-none"
+            style={{
+              left: `calc(${nodeLeft(i)} + ${STEM_W / 2 + 12}px)`,
+              top: step.side === "below" ? NUMBER_TOP_BELOW : NUMBER_TOP_ABOVE,
+            }}
+          >
+            <span
+              className="font-black tracking-tight"
+              style={{ color: step.color, fontSize: 38, lineHeight: 1 }}
+            >
+              {step.number}
+            </span>
+          </div>
+        ))}
+
+        {/* Text blocks */}
+        {steps.map((step, i) => (
+          <div
+            key={`text-${step.number}`}
+            className="absolute z-40 -translate-x-1/2 text-center [hyphens:none]"
+            style={
+              step.side === "below"
+                ? { left: nodeLeft(i), bottom: TEXT_BOTTOM_ABOVE, width: TEXT_W }
+                : { left: nodeLeft(i), top: TEXT_TOP_BELOW, width: TEXT_W }
+            }
+          >
+            <p
+              className="flex items-center justify-center gap-2 text-center font-black tracking-tight text-[#0f172a] uppercase [hyphens:none]"
+              style={{ fontSize: 27, lineHeight: 1.2 }}
+            >
+              <span style={{ color: step.color }}>{step.number}</span>
+              {step.title}
+            </p>
+            <p
+              className="mt-1 text-center font-bold text-slate-800 [hyphens:none]"
+              style={{ fontSize: 15.5, lineHeight: 1.4 }}
+            >
+              {step.dates}
+            </p>
+            <p
+              className="mt-1.5 text-center font-medium text-slate-700 [hyphens:none]"
+              style={{ fontSize: 18, lineHeight: 1.5 }}
+            >
+              {step.body}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
   );

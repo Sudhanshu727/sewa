@@ -38,7 +38,7 @@ All `/api/register/*` and `/api/profile` routes require a signed-in,
 ```bash
 npm install
 cp .env.example .env   # fill in real values - see below
-npx prisma migrate dev --name init
+npx prisma migrate dev
 npm run dev
 ```
 

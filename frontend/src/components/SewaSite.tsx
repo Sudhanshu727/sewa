@@ -16,27 +16,23 @@ import {
   FileEdit,
   FileText,
   Instagram,
-  Lightbulb,
   Mail,
   Map,
   MapPin,
   Menu,
   Phone,
   Play,
-  Rocket,
   Search,
   Send,
   ShieldCheck,
-  Trophy,
   Twitter,
   UploadCloud,
   User,
   Server,
-  Wrench,
   X,
 } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { ApiError, authApi, contactApi, CONTACT_CATEGORIES, type ContactCategory } from "../lib/api";
+import { ApiError, authApi, contactApi, announcementsApi, CONTACT_CATEGORIES, type ContactCategory, type Announcement } from "../lib/api";
 import { useAuth } from "../lib/auth";
 import campusImage from "../assets/dtu-campus-aerial.jpeg";
 import campus2Image from "../assets/campus2.jpeg";
@@ -45,7 +41,6 @@ import campus4Image from "../assets/campus4.jpeg";
 import studentsImage from "../assets/sewa-students.jpg";
 import dtuLogo from "../assets/dtu_logo.png";
 import footerImage from "../assets/footer.jpeg";
-import dtuModel from "../assets/dtu-model.png";
 import satymevjayteLogo from "../assets/satymevjayte.svg";
 import govtofnctLogo from "../assets/govtofnctdelhi.svg";
 import sewaLogo from "../assets/sewalogo.svg";
@@ -119,6 +114,16 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
   const [isScrolled, setIsScrolled] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [latestAnnouncement, setLatestAnnouncement] = useState<Announcement | null>(null);
+
+  useEffect(() => {
+    announcementsApi
+      .list()
+      .then((items) => setLatestAnnouncement(items[0] ?? null))
+      .catch(() => {
+        // Keep the ticker available even if the public announcements endpoint is unavailable.
+      });
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -282,7 +287,7 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
               </div>
             </div>
 
-                        {/* Guidelines dropdown */}
+            {/* Guidelines dropdown */}
             <div className="nav-dropdown flex items-center gap-1 cursor-pointer">
               <Link to="/guidelines" className={`nav-link ${activeNav === "guidelines" ? "text-primary font-bold" : ""}`}>
                 Guidelines
@@ -391,17 +396,21 @@ export function Header({ activeNav = "home" }: { activeNav?: "home" | "events" |
       </header>
 
       {/* Row 3: Live updates ticker - scrolls away with the page */}
-      <div className="live-updates-bar flex h-10 overflow-hidden bg-[#e0e0e0] text-xs">
-        <div className="live-updates-label flex shrink-0 items-center bg-[#ff5d5d] px-6 font-bold text-white shadow-[2px_0_8px_rgba(0,0,0,0.12)] relative z-10">
+      <div className="live-updates-bar flex h-12 overflow-hidden bg-[#e0e0e0] text-sm">
+        <a
+          href="/#announcements"
+          className="live-updates-label flex shrink-0 items-center bg-[#ff5d5d] px-6 font-extrabold text-white text-sm sm:text-base shadow-[2px_0_8px_rgba(0,0,0,0.12)] relative z-10 cursor-pointer hover:bg-[#ef4f4f] transition-colors"
+          aria-label="Jump to live announcements"
+        >
           Live Updates
-        </div>
+        </a>
         <div className="live-updates-ticker-wrap min-w-0 flex-1 overflow-hidden">
-          <div className="ticker flex h-full items-center whitespace-nowrap font-medium text-gray-800">
+          <div className="ticker flex h-full items-center whitespace-nowrap font-bold text-sm sm:text-base text-gray-800">
             <span>
-              SEWA 2026 / SEWA Youth Innovation Challenge officially launched at Delhi Technological University on 19 September 2026.
+              {latestAnnouncement?.title ?? "Live announcements are loading..."}
             </span>
             <span aria-hidden="true">
-              SEWA 2026 / SEWA Youth Innovation Challenge officially launched at Delhi Technological University on 19 September 2026.
+              {latestAnnouncement?.title ?? "Live announcements are loading..."}
             </span>
           </div>
         </div>
@@ -768,44 +777,7 @@ export function Footer() {
   );
 }
 
-const notices = [
-  [
-    "Problem Statements",
-    "Release of UDAN Phase 1 Problem Statements & Evaluation Rubrics",
-    "Detailed problem statements across five national themes are now available. Registered teams should review the official submission template and evaluation rubrics.",
-    "Problem statements span AgriTech, Clean Energy, Healthcare & Biomedical, Smart Mobility, and Industry 4.0. Teams can download the Phase 1 submission dossier from their dashboard.",
-  ],
-  [
-    "Mentorship",
-    "DTU Central Innovation Labs & Prototyping Workshop Schedule",
-    "Shortlisted teams receive access to prototyping machinery, testing facilities and dedicated faculty mentors across engineering departments.",
-    "Hands-on sessions will be held at DTU Central Fabrication Facilities including 5-axis CNC machining, laser cutting, PCB fabrication, and high-performance computing clusters.",
-  ],
-  [
-    "Guidelines",
-    "Inter-Disciplinary Team Registration & Eligibility Norms",
-    "Teams may comprise two to five members from accredited universities, polytechnics or eligible early-stage student startups.",
-    "Cross-departmental collaboration is strongly prioritized. Teams must submit institutional verification letters by 20 September 2026.",
-  ],
-  [
-    "Mentorship",
-    "Technical Webinar on Patent Filing & IP Protection for Innovators",
-    "Join leading patent attorneys and incubator directors for a practical masterclass on protecting your innovation prior to public exhibitions.",
-    "Key topics include patent prior-art searches, provisional patent filing procedures, copyright for embedded firmware, and commercialization licensing strategies.",
-  ],
-  [
-    "Evaluation",
-    "Regional Hub Screening Criteria & UDAN Milestone 1 Deliverables",
-    "Screening committees across five regional hubs will evaluate entries on technical novelty, feasibility, and grassroots deployment impact.",
-    "Evaluations follow a standardized 100-point rubric assessing problem-solution fit (30%), engineering feasibility (30%), scalability (20%), and execution roadmap (20%).",
-  ],
-  [
-    "Announcements",
-    "Seed Grant Allocation & Incubation Fast-Track for Top Finalists",
-    "Top 25 validated prototypes receive direct equity-free prototype grants and incubation incubation opportunities at DTU IIF.",
-    "Grants up to ₹5,00,000 per team alongside dedicated co-working spaces, cloud credits, and pilot deployment testing with institutional partners.",
-  ],
-];
+
 
 const LAUNCH_DATE = new Date("2026-09-19T00:00:00+05:30");
 
@@ -1594,14 +1566,24 @@ export function HomePage() {
     setCurrentSlide((prev) => (prev === heroImages.length - 1 ? 0 : prev + 1));
   };
 
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+
+  useEffect(() => {
+    announcementsApi.list()
+      .then(setAnnouncements)
+      .catch(() => { }); // fail silently — section just stays empty
+  }, []);
+
   const filtered = useMemo(
     () =>
-      notices.filter(
-        (n) =>
-          (category === "All" || category === "All Categories" || n[0] === category) &&
-          n.join(" ").toLowerCase().includes(query.toLowerCase()),
-      ),
-    [query, category],
+      announcements
+        .filter(
+          (n) =>
+            (category === "All" || category === "All Categories" || n.category === category) &&
+            [n.category, n.title, n.summary, n.detail ?? ""].join(" ").toLowerCase().includes(query.toLowerCase()),
+        )
+        .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()),
+    [announcements, query, category],
   );
   return (
     <div>
@@ -1669,7 +1651,7 @@ export function HomePage() {
               </p>
 
               <div className="mt-4 sm:mt-6 flex flex-wrap gap-2.5 sm:gap-3 justify-center">
-                <Link to="/signup" className="inline-flex items-center gap-1.5 rounded-lg bg-[#e53e3e] hover:bg-[#c53030] px-4.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-md">
+                <Link to="/team-register" className="inline-flex items-center gap-1.5 rounded-lg bg-[#e53e3e] hover:bg-[#c53030] px-4.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all hover:-translate-y-0.5 shadow-md">
                   Register Your Team
                 </Link>
                 <a href="#about" className="inline-flex items-center gap-1.5 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 backdrop-blur-xs px-4.5 sm:px-6 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-white transition-all hover:-translate-y-0.5">
@@ -1745,83 +1727,82 @@ export function HomePage() {
 
         {/* ── Timeline of 100 Day Journey ── */}
         <section id="timeline" className="t-section-band scroll-mt-20">
-          {/* Wider than .site-shell so the 1400px roadmap renders near full
-              size. Change the 1440px to resize it. */}
           <div className="mx-auto w-[min(100%-2rem,1440px)]">
             <h2 className="t-main-heading text-[#172554]">
               <span className="uppercase">Timeline</span>
-              <span className="t-subheading-2 block text-[#172554]">of 100 Day Journey</span>
+              <span className="t-subheading-2 block text-[#172554]">OF 100 DAY SEWA FIRST RYIC 2026 JOURNEY</span>
             </h2>
             <TimelineRoadmap />
           </div>
         </section>
 
-        {/* ── Statistics Section ── */}
-        <StatisticsSection />
-
-        {/* Live Announcements - hidden for now */}
-        {false && (
-          <section id="announcements" className="live-announcements pt-20 sm:pt-[100px] pb-0 scroll-mt-20">
-            <div className="site-shell">
-              <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                  <p className="eyebrow">Important Notices</p>
-                  <h2 className="section-title">Live Announcement</h2>
-                  <p className="section-subtitle">
-                    Stay updated with recent circulars, dates, and official notices.
-                  </p>
-                </div>
-                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 border border-red-200/80 text-red-600 font-bold text-xs shadow-xs self-start sm:self-center select-none">
-                  <span>Live</span>
-                  <span className="relative flex size-2.5">
-                    <span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75" />
-                    <span className="relative inline-flex rounded-full size-2.5 bg-red-600" />
-                  </span>
-                </div>
+        {/* ── Live Announcements ── */}
+        <section id="announcements" className="live-announcements t-section-band scroll-mt-20">
+          <div className="site-shell">
+            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
+              <div>
+                <p className="eyebrow !text-base sm:!text-lg mb-2">Important Notices</p>
+                <h2 className="t-main-heading !text-left !mb-2">LIVE ANNOUNCEMENTS</h2>
+                <p className="t-subheading-2 text-black/60 font-normal">
+                  Stay updated with recent circulars, dates, and official notices.
+                </p>
               </div>
-              <div className="mt-8 grid gap-3 sm:grid-cols-[1fr_220px]">
-                <label className="flex min-h-[46px] items-center gap-2.5 rounded-xl bg-[#f1f3f5] px-4 text-gray-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#ff5a5f]/20 focus-within:border-[#ff5a5f] border border-transparent transition-all">
-                  <Search size={18} className="shrink-0 text-gray-400" />
-                  <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search announcements..." className="w-full bg-transparent text-sm text-gray-900 placeholder-gray-400 outline-none" />
-                </label>
-                <label className="flex min-h-[46px] items-center justify-between rounded-xl bg-[#f1f3f5] px-4 text-gray-700 cursor-pointer focus-within:bg-white focus-within:ring-2 focus-within:ring-[#ff5a5f]/20 focus-within:border-[#ff5a5f] border border-transparent transition-all">
-                  <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full bg-transparent text-sm font-medium outline-none cursor-pointer">
-                    <option>All Categories</option>
-                    <option>Problem Statements</option>
-                    <option>Mentorship</option>
-                    <option>Guidelines</option>
-                    <option>Evaluation</option>
-                    <option>Announcements</option>
-                  </select>
-                  <ChevronDown size={18} className="shrink-0 text-gray-500 pointer-events-none" />
-                </label>
-              </div>
-              <div className="relative mt-7">
-                <div className="space-y-4 max-h-[540px] overflow-y-auto pb-16 pr-1.5 scrollbar-thin scrollbar-thumb-gray-300">
-                  {filtered.map((n, i) => (
-                    <article key={n[1]} className="rounded-2xl bg-[#f4f5f7] p-5 sm:p-6 transition-all duration-200 hover:bg-[#eceef2] hover:shadow-xs">
-                      <div className="flex items-start justify-between gap-4">
-                        <span className="text-xs text-gray-500 font-medium tracking-tight">12.Sept.2026 10:30 A.M. · {n[0]}</span>
-                        <button type="button" onClick={() => setOpen(open === i ? null : i)} className="flex items-center gap-1.5 text-xs font-bold text-[#ff5a5f] hover:text-[#e03b40] transition-colors cursor-pointer shrink-0 select-none">
-                          <span>{open === i ? "Hide Details" : "View Full Details"}</span>
-                          <ChevronDown size={14} className={`transition-transform duration-200 ${open === i ? "rotate-180" : ""}`} />
-                        </button>
-                      </div>
-                      <h3 className="mt-2 text-base sm:text-lg font-bold text-black tracking-tight leading-snug">{n[1]}</h3>
-                      <p className="mt-1.5 text-xs sm:text-sm text-gray-600 leading-relaxed max-w-3xl">{n[2]}</p>
-                      {open === i && (
-                        <div className="mt-4 pt-3.5 border-t border-gray-200/90 text-xs text-gray-700 leading-relaxed animate-fade-in">
-                          {n[3] || "Complete circulars, guidelines, and submission links are published through the official DTU SEWA portal."}
-                        </div>
-                      )}
-                    </article>
-                  ))}
-                </div>
-                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[26px] sm:h-[34px] bg-gradient-to-t from-gray-400/35 via-gray-300/20 to-transparent backdrop-blur-[2px] rounded-b-2xl" />
+              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-red-50 border border-red-200/80 text-red-600 font-bold text-xs shadow-xs self-start sm:self-center select-none shrink-0">
+                <span>Live</span>
+                <span className="relative flex size-2.5">
+                  <span className="animate-ping absolute inline-flex size-full rounded-full bg-red-400 opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2.5 bg-red-600" />
+                </span>
               </div>
             </div>
-          </section>
-        )}
+            <div className="grid gap-3 sm:grid-cols-[1fr_220px]">
+              <label className="flex min-h-[46px] items-center gap-2.5 rounded-xl bg-[#f1f3f5] px-4 text-gray-500 focus-within:bg-white focus-within:ring-2 focus-within:ring-[#ff5a5f]/20 focus-within:border-[#ff5a5f] border border-transparent transition-all">
+                <Search size={18} className="shrink-0 text-gray-400" />
+                <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search announcements..." className="t-content-sm w-full bg-transparent text-gray-900 placeholder-gray-400 outline-none" />
+              </label>
+              <label className="flex min-h-[46px] items-center justify-between rounded-xl bg-[#f1f3f5] px-4 text-gray-700 cursor-pointer focus-within:bg-white focus-within:ring-2 focus-within:ring-[#ff5a5f]/20 focus-within:border-[#ff5a5f] border border-transparent transition-all">
+                <select value={category} onChange={(e) => setCategory(e.target.value)} className="t-content-sm w-full bg-transparent font-medium outline-none cursor-pointer">
+                  <option>All Categories</option>
+                  <option>Problem Statements</option>
+                  <option>Mentorship</option>
+                  <option>Guidelines</option>
+                  <option>Evaluation</option>
+                  <option>Announcements</option>
+                </select>
+                <ChevronDown size={18} className="shrink-0 text-gray-500 pointer-events-none" />
+              </label>
+            </div>
+            <div className="relative mt-7">
+              <div className="space-y-4 max-h-[540px] overflow-y-auto pb-16 pr-1.5 scrollbar-thin scrollbar-thumb-gray-300">
+                {filtered.map((n, i) => (
+                  <article key={n.id} className="rounded-2xl bg-[#f4f5f7] p-5 sm:p-6 transition-all duration-200 hover:bg-[#eceef2] hover:shadow-xs">
+                    <div className="flex items-start justify-between gap-4">
+                      <span className="t-content-sm text-gray-500 font-medium tracking-tight">
+                        {n.refNumber ? `Ref: ${n.refNumber} · ` : ""}
+                        {new Date(n.publishedAt).toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })} · {n.category}
+                      </span>
+                      <button type="button" onClick={() => setOpen(open === i ? null : i)} className="t-content-sm flex items-center gap-1.5 font-bold text-[#ff5a5f] hover:text-[#e03b40] transition-colors cursor-pointer shrink-0 select-none">
+                        <span>{open === i ? "Hide Details" : "View Full Details"}</span>
+                        <ChevronDown size={14} className={`transition-transform duration-200 ${open === i ? "rotate-180" : ""}`} />
+                      </button>
+                    </div>
+                    <h3 className="t-subheading-2 mt-2 text-black tracking-tight">{n.title}</h3>
+                    <p className="t-content mt-2 text-gray-600 max-w-3xl">{n.summary}</p>
+                    {open === i && (
+                      <div className="t-content-sm mt-4 pt-3.5 border-t border-gray-200/90 text-gray-700 leading-relaxed animate-fade-in">
+                        {n.detail || "Complete circulars, guidelines, and submission links are published through the official DTU SEWA portal."}
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+              <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-[26px] sm:h-[34px] bg-gradient-to-t from-gray-400/35 via-gray-300/20 to-transparent backdrop-blur-[2px] rounded-b-2xl" />
+            </div>
+          </div>
+        </section>
+
+        {/* ── Statistics Section ── */}
+        <StatisticsSection />
         {/* Join The Challenge - hidden for now */}
         {false && (
           <section id="steps" className="pt-20 sm:pt-[100px] pb-20 sm:pb-[100px] overflow-hidden scroll-mt-20">
@@ -1938,26 +1919,55 @@ export function HomePage() {
             <h2 className="t-main-heading t-title-gap-wide text-[#172554] uppercase">
               Organizing Committee
             </h2>
+            <PeopleGrid rows={2} />
+          </div>
+        </section>
 
-            {/* 4 columns x 3 rows grid of 12 circular members */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 sm:gap-x-12 md:gap-x-16 gap-y-6 sm:gap-y-12 md:gap-y-16 max-w-4xl mx-auto">
-              {Array.from({ length: 12 }).map((_, idx) => (
-                <div key={idx} className="flex flex-col items-center text-center">
-                  <div className="size-16 sm:size-24 md:size-28 rounded-full bg-[#d2d2d2] mb-2 sm:mb-3.5 transition-transform duration-200 hover:scale-105" />
-                  <h3 className="text-xs sm:text-base font-bold text-[#172554]">
-                    Name
-                  </h3>
-                  <p className="text-[11px] sm:text-sm text-gray-500 mt-0.5">
-                    Designation
-                  </p>
-                </div>
-              ))}
-            </div>
+        {/* ── Organizing Committee ── */}
+        <section id="committee" className="t-section-band scroll-mt-20">
+          <div className="site-shell">
+            <h2 className="t-main-heading t-title-gap-wide text-[#172554] uppercase">
+              Organizing Committee
+            </h2>
+            <PeopleGrid rows={2} />
+          </div>
+        </section>
+
+        {/* ── Mentors ── */}
+        <section id="mentors" className="t-section-band scroll-mt-20">
+          <div className="site-shell">
+            <h2 className="t-main-heading t-title-gap-wide uppercase text-[#172554]">
+              Mentors
+            </h2>
+            <PeopleGrid rows={2} />
           </div>
         </section>
       </main>
       <SubscribeSection />
       <Footer />
+    </div>
+  );
+}
+
+/**
+ * Grid of circular people cards, four across. Used by both the Organizing
+ * Committee and Mentors sections so the two stay visually identical — change
+ * the card here and both follow.
+ *
+ * Sized with responsive mobile classes so avatars and labels are balanced on phones.
+ */
+function PeopleGrid({ rows }: { rows: number }) {
+  const COLUMNS = 4;
+
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-4 sm:gap-x-12 md:gap-x-16 gap-y-6 sm:gap-y-12 md:gap-y-16 max-w-4xl mx-auto">
+      {Array.from({ length: rows * COLUMNS }).map((_, idx) => (
+        <div key={idx} className="flex flex-col items-center text-center">
+          <div className="size-16 sm:size-24 md:size-28 rounded-full bg-[#d2d2d2] mb-2 sm:mb-3.5 transition-transform duration-200 hover:scale-105" />
+          <h3 className="text-xs sm:text-base font-bold text-[#172554]">Name</h3>
+          <p className="text-[11px] sm:text-sm text-gray-500 mt-0.5">Designation</p>
+        </div>
+      ))}
     </div>
   );
 }
@@ -2500,305 +2510,135 @@ function Field({
   );
 }
 
-const stagesData = [
-  {
-    number: "01",
-    name: "IDEATE",
-    badge: "Days 1–15 • 19 Sep – 1 Oct 2026",
-    description: "Launch of 50 National Problem Statements, online orientation, team registrations, and idea submissions.",
-    icon: Lightbulb,
-    color: "#ff6000",
-    gradient: "from-[#ff5e00] to-[#ff7800]",
-    shadow: "shadow-[0_16px_36px_rgba(255,94,0,0.35)]",
-    textColor: "text-[#ff6000]",
-    side: "left" as const,
-  },
-  {
-    number: "02",
-    name: "SCREEN",
-    badge: "Days 16–30 • 2 – 16 Oct 2026",
-    description: "Preliminary eligibility scrutiny, regional screening, and announcement of shortlisted teams on 2 October.",
-    icon: Search,
-    color: "#f59e0b",
-    gradient: "from-[#f59e0b] to-[#fbbf24]",
-    shadow: "shadow-[0_16px_36px_rgba(245,158,11,0.35)]",
-    textColor: "text-[#f59e0b]",
-    side: "right" as const,
-  },
-  {
-    number: "03",
-    name: "BUILD",
-    badge: "Days 31–60 • 17 Oct – 15 Nov 2026",
-    description: "Expert bootcamps, laboratory/maker-space access, design reviews, and working prototype fabrication.",
-    icon: Wrench,
-    color: "#00a86b",
-    gradient: "from-[#00a86b] to-[#10b981]",
-    shadow: "shadow-[0_16px_36px_rgba(0,168,107,0.35)]",
-    textColor: "text-[#00a86b]",
-    side: "left" as const,
-  },
-  {
-    number: "04",
-    name: "VALIDATE",
-    badge: "Days 61–80 • 16 Nov – 5 Dec 2026",
-    description: "Technical benchmarking, safety/reliability testing, and performance validation.",
-    icon: ShieldCheck,
-    color: "#00b4d8",
-    gradient: "from-[#00b4d8] to-[#0096c7]",
-    shadow: "shadow-[0_16px_36px_rgba(0,180,216,0.35)]",
-    textColor: "text-[#00b4d8]",
-    side: "right" as const,
-  },
-  {
-    number: "05",
-    name: "TEST",
-    badge: "Days 81–95 • 6 – 20 Dec 2026",
-    description: "Field demonstrations in real environments, usability testing, and cost/sustainability reviews.",
-    icon: Rocket,
-    color: "#1d4ed8",
-    gradient: "from-[#1d4ed8] to-[#2563eb]",
-    shadow: "shadow-[0_16px_36px_rgba(29,78,216,0.35)]",
-    textColor: "text-[#1d4ed8]",
-    side: "left" as const,
-  },
-  {
-    number: "06",
-    name: "SELECT",
-    badge: "Days 96–100 • 21 – 25 Dec 2026",
-    description: "Final report submissions and Regional Jury evaluations to nominate finalists for Delhi.",
-    icon: Trophy,
-    color: "#7c3aed",
-    gradient: "from-[#7c3aed] to-[#6d28d9]",
-    shadow: "shadow-[0_16px_36px_rgba(124,58,237,0.35)]",
-    textColor: "text-[#7c3aed]",
-    side: "right" as const,
-  },
+type EventStage = {
+  number: string;
+  name: string;
+  period: string;
+  days: string;
+  activity: string;
+  badgeBg: string;
+  badgeText: string;
+};
+
+/** Same 6-colour cycle used for the TRL badges on the Resources page. */
+const STAGE_BADGE_STYLES = [
+  { bg: "bg-[#eaf3fd]", text: "text-[#2e6fbf]" },
+  { bg: "bg-[#eafaf1]", text: "text-[#1f9e63]" },
+  { bg: "bg-[#fff6e0]", text: "text-[#c8930b]" },
+  { bg: "bg-[#ffe9de]", text: "text-[#d6602c]" },
+  { bg: "bg-[#ffe6e8]", text: "text-[#e0435a]" },
+  { bg: "bg-[#f0eefb]", text: "text-[#6f5fc9]" },
 ];
 
-export function StageTimeline() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [pathData, setPathData] = useState("");
+const eventStages: EventStage[] = [
+  {
+    number: "1",
+    name: "Stage-I (Ideate)",
+    period: "19 Sep – 1 Oct 2026",
+    days: "Day 1–15",
+    activity:
+      "Launch of 5 National Level Problem Statements and 10 areas of challenge for local level innovations for registration; awareness campaign; idea submission; local problem identification; online orientation sessions.",
+  },
+  {
+    number: "2",
+    name: "Stage-II (Screening)",
+    period: "2 Oct – 16 Oct 2026",
+    days: "Day 16–30",
+    activity:
+      "Announcement of Jury (02 Oct 26). Preliminary scrutiny; eligibility check; technical and innovation assessment; shortlisting of promising ideas; announcement of selected teams.",
+  },
+  {
+    number: "3",
+    name: "Stage-III (Build)",
+    period: "17 Oct – 15 Nov 2026",
+    days: "Day 31–60",
+    activity:
+      "Online mentoring; expert consultations; design development; engineering analysis; workshops/boot camps; access to laboratories/fabrication facilities; prototype development; interim design review.",
+  },
+  {
+    number: "4",
+    name: "Stage-IV (Validate)",
+    period: "16 Nov – 5 Dec 2026",
+    days: "Day 61–80",
+    activity:
+      "Prototype testing; technical evaluation; performance measurement; safety/reliability assessment; refinement of prototypes; validation against defined challenge parameters.",
+  },
+  {
+    number: "5",
+    name: "Stage-V (Test)",
+    period: "6 Dec – 20 Dec 2026",
+    days: "Day 81–95",
+    activity:
+      "Field trials; demonstrations in actual/relevant environments; user feedback; assessment of usability, cost, sustainability and scalability; final prototype refinement.",
+  },
+  {
+    number: "6",
+    name: "Stage-VI (Evaluation cum Winner Selection)",
+    period: "21 Dec – 25 Dec 2026",
+    days: "Day 95–100",
+    activity:
+      "Submission of final reports; final prototype demonstration; National Jury evaluation; selection of finalists/winners; preparation for Grand Finale.",
+  },
+  {
+    number: "7",
+    name: "Stage-VII Grand Finale",
+    period: "To be announced",
+    days: "",
+    activity:
+      "National Innovation Exhibition; finalist demonstrations; presentations before National Jury; interaction with industry/government; awards; recognition of outstanding innovations; identification of solutions for adoption/deployment.",
+  },
+].map((stage, i) => ({
+  ...stage,
+  badgeBg: STAGE_BADGE_STYLES[i % STAGE_BADGE_STYLES.length]!.bg,
+  badgeText: STAGE_BADGE_STYLES[i % STAGE_BADGE_STYLES.length]!.text,
+}));
 
-  useEffect(() => {
-    const computePath = () => {
-      if (!containerRef.current) return;
-      const cRect = containerRef.current.getBoundingClientRect();
-      const playEl = containerRef.current.querySelector<HTMLElement>("[data-play-node]");
-      const nodeEls = Array.from(containerRef.current.querySelectorAll<HTMLElement>("[data-node-idx]"));
-      const endEl = containerRef.current.querySelector<HTMLElement>("[data-end-node]");
-
-      if (!playEl || nodeEls.length !== 6 || !endEl) return;
-
-      const getPoint = (el: HTMLElement) => {
-        const r = el.getBoundingClientRect();
-        return {
-          x: r.left + r.width / 2 - cRect.left,
-          y: r.top + r.height / 2 - cRect.top,
-        };
-      };
-
-      const play = getPoint(playEl);
-      const nodes = nodeEls.map(getPoint);
-      const end = getPoint(endEl);
-
-      const firstNode = nodes[0];
-      const lastNode = nodes[nodes.length - 1];
-      if (!firstNode || !lastNode) return;
-
-      // Build smooth wide curvy S-path
-      let d = `M ${play.x} ${play.y} `;
-
-      // 1. Play button into Node 1
-      const dy0 = firstNode.y - play.y;
-      d += `C ${play.x + 25} ${play.y + dy0 * 0.4}, ${firstNode.x - 10} ${firstNode.y - dy0 * 0.4}, ${firstNode.x} ${firstNode.y} `;
-
-      // 2. Wide curvy wave between nodes
-      for (let i = 0; i < nodes.length - 1; i++) {
-        const p1 = nodes[i];
-        const p2 = nodes[i + 1];
-        if (!p1 || !p2) continue;
-        const dy = p2.y - p1.y;
-
-        if (i % 2 === 0) {
-          // From Right node (Stage 1, 3, 5) to Left node (Stage 2, 4, 6)
-          const cp1x = p1.x + 45;
-          const cp1y = p1.y + dy * 0.35;
-          const cp2x = p2.x - 45;
-          const cp2y = p2.y - dy * 0.35;
-          d += `C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y} `;
-        } else {
-          // From Left node (Stage 2, 4) to Right node (Stage 3, 5)
-          const cp1x = p1.x - 45;
-          const cp1y = p1.y + dy * 0.35;
-          const cp2x = p2.x + 45;
-          const cp2y = p2.y - dy * 0.35;
-          d += `C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${p2.x} ${p2.y} `;
-        }
-      }
-
-      // 3. Node 6 into End dot
-      const dyEnd = end.y - lastNode.y;
-      d += `C ${lastNode.x - 30} ${lastNode.y + dyEnd * 0.4}, ${end.x - 10} ${end.y - dyEnd * 0.4}, ${end.x} ${end.y}`;
-
-      setPathData(d);
-    };
-
-    computePath();
-    window.addEventListener("resize", computePath);
-    const t1 = setTimeout(computePath, 150);
-    const t2 = setTimeout(computePath, 500);
-    return () => {
-      window.removeEventListener("resize", computePath);
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, []);
-
+/**
+ * Timeline & Stages table. Built on the same shape as the eligibility table
+ * on the Guidelines page (light header bar, rounded rows, numbered circle
+ * badge, t-content throughout) so the two tables read as one system.
+ */
+function StagesTable() {
   return (
-    <div ref={containerRef} className="relative max-w-4xl mx-auto py-8 px-2 sm:px-4">
-      {/* SVG S-curve wavy connector line */}
-      <svg className="absolute inset-0 w-full h-full pointer-events-none -z-0 overflow-visible">
-        <path
-          d={
-            pathData ||
-            "M 430 40 C 455 75, 485 100, 490 132 C 535 170, 310 195, 345 231 C 310 265, 535 295, 490 330 C 535 365, 310 395, 345 426 C 310 460, 535 490, 490 526 C 535 560, 310 590, 345 623 C 320 645, 420 655, 430 675"
-          }
-          fill="none"
-          stroke="#94a3b8"
-          strokeWidth="2.5"
-          strokeDasharray="6 6"
-          strokeLinecap="round"
-        />
-      </svg>
+    <div className="mt-10 sm:mt-12 w-full max-w-[1180px] mx-auto flex flex-col gap-[14px]">
+      <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="min-w-[1160px] md:min-w-0 flex flex-col gap-[14px]">
+          {/* Column headers */}
+          <div className="w-full min-h-[58px] bg-[#EBF1F8] rounded-[16px] grid grid-cols-[80px_220px_380px_1fr] items-center py-2">
+            <div className="t-content flex items-center justify-center font-bold! text-[#334155]">#</div>
+            <div className="t-content pl-[24px] font-bold! text-[#1F2D48]">Stage</div>
+            <div className="t-content pl-[24px] font-bold! text-[#1F2D48]">Period</div>
+            <div className="t-content pl-[32px] pr-5 font-bold! text-[#1F2D48]">Activity</div>
+          </div>
 
-      {/* Top Play Button on centerline */}
-      <div className="flex justify-center mb-6">
-        <div
-          data-play-node
-          className="size-10 sm:size-11 rounded-full bg-gradient-to-r from-[#ff5e00] to-[#ff7800] flex items-center justify-center text-white shadow-[0_8px_22px_rgba(255,94,0,0.4)] hover:scale-110 transition-transform z-10 cursor-pointer"
-        >
-          <Play size={13} fill="currentColor" className="ml-0.5" />
-        </div>
-      </div>
-
-      <div className="space-y-10 sm:space-y-14">
-        {stagesData.map((stage, idx) => {
-          const Icon = stage.icon;
-          const isLeft = stage.side === "left";
-
-          return (
-            <div key={stage.number} className={`relative flex ${isLeft ? "justify-start" : "justify-end"}`}>
-              <div className="w-full max-w-[470px] sm:max-w-[505px]">
-                {/* Stage Label above Card */}
-                <div className={`mb-2 ${isLeft ? "text-left pl-3" : "text-right pr-3"}`}>
-                  <span className="text-[11px] sm:text-xs font-bold text-gray-400 uppercase tracking-widest block">
-                    STAGE
-                  </span>
-                  <span className={`text-4xl sm:text-5xl font-black ${stage.textColor} leading-none`}>
-                    {stage.number}
-                  </span>
+          {/* Rows */}
+          {eventStages.map((stage, i) => (
+            <article
+              key={stage.number}
+              className={`w-full min-h-[96px] ${i % 2 === 0 ? "bg-white" : "bg-[#fafbfc]"} rounded-[16px] border border-[#eaecf0] grid grid-cols-[80px_220px_380px_1fr] items-center py-4`}
+            >
+              <div className="flex items-center justify-center">
+                <div
+                  className={`t-content inline-flex size-[40px] items-center justify-center rounded-full font-bold! ${stage.badgeBg} ${stage.badgeText}`}
+                >
+                  {stage.number}
                 </div>
-
-                {isLeft ? (
-                  /* Left Card: Card Content + White Circle + Triangle Arrow + Target Node */
-                  <div className="flex items-center">
-                    <div
-                      className={`relative flex-1 rounded-full bg-gradient-to-r ${stage.gradient} py-3 sm:py-3.5 pl-6 sm:pl-8 pr-2.5 ${stage.shadow} text-white flex items-center justify-between gap-3 sm:gap-4 transition-all hover:scale-[1.01]`}
-                    >
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base sm:text-lg font-extrabold tracking-wide uppercase">
-                            {stage.name}
-                          </span>
-                          <span className="text-[10px] sm:text-[11px] font-semibold bg-white/25 backdrop-blur-xs px-2.5 py-0.5 rounded-full whitespace-nowrap text-white">
-                            {stage.badge}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs sm:text-[13px] text-white/95 leading-relaxed font-normal">
-                          {stage.description}
-                        </p>
-                      </div>
-
-                      {/* White circular badge on right */}
-                      <div className="size-12 sm:size-14 rounded-full bg-white text-gray-900 shadow-md flex items-center justify-center shrink-0 mr-0.5">
-                        <Icon size={22} strokeWidth={2.2} />
-                      </div>
-                    </div>
-
-                    {/* Speech-bubble arrow pointer pointing RIGHT */}
-                    <div
-                      className="w-0 h-0 border-y-[9px] border-y-transparent shrink-0 -mr-0.5"
-                      style={{
-                        borderLeftWidth: "12px",
-                        borderLeftStyle: "solid",
-                        borderLeftColor: stage.color,
-                      }}
-                    />
-
-                    {/* Bullseye target node */}
-                    <div
-                      data-node-idx={idx}
-                      className="size-6 sm:size-7 rounded-full border-[2.5px] bg-white flex items-center justify-center shrink-0 shadow-xs z-10 ml-2"
-                      style={{ borderColor: stage.color }}
-                    >
-                      <div className="size-2 sm:size-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
-                    </div>
-                  </div>
-                ) : (
-                  /* Right Card: Target Node + Triangle Arrow + White Circle + Card Content */
-                  <div className="flex items-center">
-                    {/* Bullseye target node */}
-                    <div
-                      data-node-idx={idx}
-                      className="size-6 sm:size-7 rounded-full border-[2.5px] bg-white flex items-center justify-center shrink-0 shadow-xs z-10 mr-2"
-                      style={{ borderColor: stage.color }}
-                    >
-                      <div className="size-2 sm:size-2.5 rounded-full" style={{ backgroundColor: stage.color }} />
-                    </div>
-
-                    {/* Speech-bubble arrow pointer pointing LEFT */}
-                    <div
-                      className="w-0 h-0 border-y-[9px] border-y-transparent shrink-0 -ml-0.5"
-                      style={{
-                        borderRightWidth: "12px",
-                        borderRightStyle: "solid",
-                        borderRightColor: stage.color,
-                      }}
-                    />
-
-                    <div
-                      className={`relative flex-1 rounded-full bg-gradient-to-r ${stage.gradient} py-3 sm:py-3.5 pr-6 sm:pr-8 pl-2.5 ${stage.shadow} text-white flex items-center gap-3 sm:gap-4 transition-all hover:scale-[1.01]`}
-                    >
-                      {/* White circular badge on left */}
-                      <div className="size-12 sm:size-14 rounded-full bg-white text-gray-900 shadow-md flex items-center justify-center shrink-0 ml-0.5">
-                        <Icon size={22} strokeWidth={2.2} />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <span className="text-base sm:text-lg font-extrabold tracking-wide uppercase">
-                            {stage.name}
-                          </span>
-                          <span className="text-[10px] sm:text-[11px] font-semibold bg-white/25 backdrop-blur-xs px-2.5 py-0.5 rounded-full whitespace-nowrap text-white">
-                            {stage.badge}
-                          </span>
-                        </div>
-                        <p className="mt-1 text-xs sm:text-[13px] text-white/95 leading-relaxed font-normal">
-                          {stage.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Ending Purple Dot on centerline */}
-      <div className="flex justify-center mt-8">
-        <div data-end-node className="size-3.5 rounded-full bg-[#7c3aed] shadow-xs z-10" />
+              <div className="pl-[24px] pr-4 h-full flex items-center border-r border-black/[0.04]">
+                <h3 className="t-content font-bold! text-[#112347]">{stage.name}</h3>
+              </div>
+              <div className="pl-[24px] pr-4 h-full flex items-center border-r border-black/[0.04]">
+                <p className="t-content whitespace-nowrap font-bold! text-[#14234B]">
+                  {stage.period}
+                  {stage.days && <span className="ml-1 font-normal! text-gray-500">({stage.days})</span>}
+                </p>
+              </div>
+              <div className="pl-[32px] pr-5 flex items-center">
+                <p className="t-content text-[#475569]">{stage.activity}</p>
+              </div>
+            </article>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -2809,165 +2649,56 @@ export function EventsPage() {
     <div className="min-h-screen flex flex-col bg-white">
       <Header activeNav="events" />
 
-      <main className="flex-1">
-        {/* Hero Section: Discover What's Happening */}
-        <section className="pt-12 sm:pt-16 lg:pt-20 pb-16 sm:pb-20 border-b border-gray-100">
-          <div className="site-shell grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-            <div className="lg:col-span-7">
-              <h1 className="t-main-heading text-[#172554]">
-                Discover What&apos;s
-                <span className="block text-[#ff3b30] mt-1.5 sm:mt-2">Happening</span>
-              </h1>
-              <p className="t-content mt-5 sm:mt-6 text-gray-600 max-w-lg">
-                Discover the key events of the SEWA Youth Innovation Challenge - from the launch and
-                innovation showcase to mentoring, prototype development, regional demonstrations, and
-                the Grand Finale.
-              </p>
-              <div className="mt-8 flex flex-wrap items-center gap-4">
-                <a
-                  href="#launch-event"
-                  className="rounded-full bg-[#ff3b30] hover:bg-[#e03126] active:scale-95 text-white font-bold px-8 py-3.5 text-sm shadow-[0_12px_28px_rgba(255,59,48,0.32)] transition-all"
-                >
-                  Explore Events
-                </a>
-                <a
-                  href="#roadmap"
-                  className="rounded-full bg-white hover:bg-gray-50 active:scale-95 text-gray-800 border border-gray-300 font-semibold px-8 py-3.5 text-sm shadow-2xs transition-all"
-                >
-                  View Timeline
-                </a>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5">
-              <div className="relative rounded-[28px] overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.12)] border border-gray-100/60">
-                <img
-                  src={campusImage}
-                  alt="DTU Campus Aerial View"
-                  className="w-full h-[320px] sm:h-[380px] lg:h-[420px] object-cover"
-                  width={800}
-                  height={500}
-                />
-              </div>
-            </div>
-          </div>
+      <main className="t-section-stack flex-1 site-shell max-w-5xl py-12 sm:py-16">
+        {/* National Launch Event */}
+        <section id="launch-event" className="scroll-mt-16 text-center">
+          <h1 className="t-main-heading uppercase text-[#172554]">
+            National <br className="hidden sm:inline" />Launch Event
+          </h1>
+          <p className="t-subheading-2 mt-3 text-center text-gray-700">
+            SEWA FIRST 2026 National Launch Event at Delhi Technological University
+          </p>
+          <p className="t-content mx-auto mt-6 max-w-3xl text-gray-700">
+            Join us on 17 September 2026 for the grand inaugural ceremony and National Innovation
+            Festival at DTU. The launch brings together leadership from ministries, academia, and
+            industry to unveil the national innovation portal, release the 50 flagship problem
+            statements, and kick off the nationwide 100-day innovation journey toward Viksit Bharat.
+          </p>
         </section>
 
-        {/* Section 2: National Launch Event */}
-        <section id="launch-event" className="t-section-band bg-white scroll-mt-16 border-b border-gray-100">
-          <div className="site-shell grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            {/* Left: Model Photo card on soft backdrop with glow */}
-            <div className="lg:col-span-6 order-2 lg:order-1">
-              <div className="relative max-w-md mx-auto lg:max-w-none flex items-center justify-center">
-                <div className="absolute -top-6 -right-6 w-52 h-52 rounded-full bg-rose-200/50 blur-2xl -z-10" />
-                <div className="w-full max-w-[440px] aspect-[4/3.4] rounded-[36px] bg-[#f8f9fa] border border-gray-100/70 p-5 flex items-center justify-center">
-                  <div className="rounded-[26px] overflow-hidden shadow-[0_25px_60px_rgba(0,0,0,0.14)] border border-white w-full h-full">
-                    <img
-                      src={dtuModel}
-                      alt="DTU Amphitheatre Scale Architectural Model"
-                      className="w-full h-full object-cover"
-                      width={566}
-                      height={538}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: Text details */}
-            <div className="lg:col-span-6 order-1 lg:order-2">
-              <span className="text-xs sm:text-[13px] font-bold tracking-[0.2em] text-[#ff3b30] uppercase">
-                NATIONAL LAUNCH EVENT
-              </span>
-              <h2 className="mt-3 text-2xl sm:text-4xl lg:text-[44px] font-extrabold text-[#172554] tracking-tight leading-[1.14] uppercase">
-                Kickstarting SEWA 2026 <br className="hidden sm:inline" />At Delhi Technological University
-              </h2>
-              <p className="t-content mt-5 text-gray-600">
-                Join us on 19 September 2026 for the grand inaugural ceremony and National Innovation
-                Festival at DTU. The launch brings together leadership from ministries, academia, and
-                industry to unveil the national innovation portal, release the 50 flagship problem
-                statements, and kick off the nationwide 100-day innovation journey toward Viksit Bharat.
-              </p>
-              <a
-                href="#roadmap"
-                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#ff3b30] hover:underline"
-              >
-                <span>View Launch Schedule</span>
-                <ArrowRight size={16} />
-              </a>
-            </div>
-          </div>
+        {/* Competition Roadmap */}
+        <section id="roadmap" className="scroll-mt-16 text-center">
+          <h2 className="t-main-heading uppercase text-[#172554]">
+            Competition <br className="hidden sm:inline" />Roadmap
+          </h2>
+          <p className="t-subheading-2 mt-3 text-center text-gray-700">The 100-Day Innovation Journey</p>
+          <p className="t-content mx-auto mt-6 max-w-3xl text-gray-700">
+            Following the national launch, participants embark on a rigorous, milestone-driven
+            pathway from September to December 2026. Moving from initial problem identification
+            through regional mentoring, prototyping, and rigorous field testing, the challenge
+            culminates in proven, deployable solutions ready for national impact.
+          </p>
         </section>
 
-        {/* Section 3: Competition Roadmap */}
-        <section id="roadmap" className="t-section-band bg-white scroll-mt-16">
-          <div className="site-shell">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
-              {/* Left Column: Heading & Description */}
-              <div className="lg:col-span-6">
-                <span className="text-xs sm:text-[13px] font-bold tracking-[0.2em] text-[#ff3b30] uppercase">
-                  COMPETITION ROADMAP
-                </span>
-                <h2 className="mt-3 text-2xl sm:text-4xl lg:text-[44px] font-extrabold text-[#172554] tracking-tight leading-[1.14] uppercase">
-                  The 100-Day <br className="hidden sm:inline" />Innovation Journey
-                </h2>
-                <p className="t-content mt-5 text-gray-600">
-                  Following the national launch, participants embark on a rigorous, milestone-driven
-                  pathway from September to December 2026. Moving from initial problem identification
-                  through regional mentoring, prototyping, and rigorous field testing, the challenge
-                  culminates in proven, deployable solutions ready for national impact.
-                </p>
-                <a
-                  href="#stages"
-                  className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#ff3b30] hover:underline"
-                >
-                  <span>Explore the 6 Stages Below</span>
-                  <ArrowRight size={16} />
-                </a>
-              </div>
+        {/* Timeline & Stages */}
+        <section id="stages" className="scroll-mt-16">
+          <h2 className="t-main-heading text-center uppercase text-[#172554]">Timeline &amp; Stages</h2>
+          <p className="t-subheading-2 mt-3 text-center text-gray-700">
+            Key phases, dates and activities for the national challenge.
+          </p>
 
-              {/* Right Column: 3-Image Collage on soft pink card */}
-              <div className="lg:col-span-6">
-                <div className="relative max-w-lg mx-auto lg:max-w-none">
-                  <div className="absolute -top-6 -right-6 w-52 h-52 rounded-full bg-rose-200/50 blur-2xl -z-10" />
-                  <div className="rounded-[36px] bg-[#fdf2f0] p-4 sm:p-5">
-                    <div className="grid grid-cols-12 gap-3.5 sm:gap-4 items-center">
-                      <div className="col-span-6 space-y-3.5 sm:space-y-4">
-                        <div className="rounded-[22px] overflow-hidden shadow-sm border border-white">
-                          <img
-                            src={studentsImage}
-                            alt="Students gathering at DTU amphitheatre"
-                            className="w-full h-36 sm:h-44 object-cover"
-                          />
-                        </div>
-                        <div className="rounded-[22px] overflow-hidden shadow-sm border border-white">
-                          <img
-                            src={dtuModel}
-                            alt="DTU Campus architectural model perspective"
-                            className="w-full h-40 sm:h-48 object-cover"
-                          />
-                        </div>
-                      </div>
-                      <div className="col-span-6">
-                        <div className="rounded-[22px] overflow-hidden shadow-sm border border-white">
-                          <img
-                            src={campus4Image}
-                            alt="DTU Campus academic block sunset"
-                            className="w-full h-[310px] sm:h-[390px] object-cover"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <StagesTable />
+        </section>
 
-            {/* Section 4: 6-Stage Timeline */}
-            <div id="stages" className="mt-20 sm:mt-28 scroll-mt-20">
-              <StageTimeline />
-            </div>
-          </div>
+        {/* Result Announcement */}
+        <section id="results" className="scroll-mt-16 text-center">
+          <h2 className="t-main-heading uppercase">Result Announcement</h2>
+          <p className="t-subheading-2 mt-3 text-gray-700">
+            Results and winner felicitation of all problem statements will be announced.
+          </p>
+          <p className="mt-6 text-[#ff3b30]" style={{ fontSize: 34, fontWeight: 800, lineHeight: 1.1 }}>
+            Coming Soon
+          </p>
         </section>
       </main>
 
@@ -2979,7 +2710,6 @@ export function EventsPage() {
     </div>
   );
 }
-
 
 export function ForgotPasswordPage() {
   // "request" collects the email; "reset" collects the code + new password.
@@ -3266,17 +2996,17 @@ export function ContactPage() {
               CONTACT US
             </h1>
 
-            <div className="grid grid-cols-1 md:grid-cols-[270px_1fr] gap-6 sm:gap-7 items-start">
+            <div className="grid grid-cols-1 md:grid-cols-[360px_1fr] gap-6 sm:gap-7 items-start">
               {/* Left Info Card */}
               <div className="rounded-[20px] bg-white border border-gray-200/80 p-5 sm:p-6 space-y-6">
                 {/* Norther Region Coordinator */}
                 <div className="flex items-start gap-3">
                   <MapPin size={17} className="text-[#ff4d4f] shrink-0 mt-0.5" strokeWidth={1.8} />
                   <div>
-                    <h3 className="font-bold text-xs sm:text-[13px] text-[#172554] leading-tight">
+                    <h3 className="font-bold text-sm sm:text-[16px] text-[#172554] leading-snug">
                       Norther Region Coordinator
                     </h3>
-                    <p className="mt-1 text-[11px] text-gray-500 leading-relaxed font-normal">
+                    <p className="mt-1 text-left text-[16px] leading-relaxed text-gray-500">
                       Delhi Technological University, Shahbad Daulatpur, Bawana Road, Rohini, Delhi-110042, India
                     </p>
                   </div>
@@ -3286,12 +3016,12 @@ export function ContactPage() {
                 <div className="flex items-start gap-3">
                   <Mail size={17} className="text-[#ff4d4f] shrink-0 mt-0.5" strokeWidth={1.8} />
                   <div>
-                    <h3 className="font-bold text-xs sm:text-[13px] text-[#172554] leading-tight">
+                    <h3 className="font-bold text-sm sm:text-[16px] text-[#172554] leading-snug">
                       For any queries, write to:
                     </h3>
                     <a
                       href="mailto:sewa2026@dtu.ac.in"
-                      className="mt-0.5 text-[11px] font-medium text-[#ff4d4f] hover:underline block"
+                      className="mt-0.5 block text-[16px] font-medium text-[#ff4d4f] hover:underline"
                     >
                       sewa2026@dtu.ac.in
                     </a>
@@ -3302,10 +3032,10 @@ export function ContactPage() {
                 <div className="flex items-start gap-3">
                   <Phone size={17} className="text-[#ff4d4f] shrink-0 mt-0.5" strokeWidth={1.8} />
                   <div>
-                    <h3 className="font-bold text-xs sm:text-[13px] text-[#172554] leading-tight">
+                    <h3 className="font-bold text-sm sm:text-[16px] text-[#172554] leading-snug">
                       Phone Lines:
                     </h3>
-                    <p className="mt-0.5 text-[11px] text-gray-500 leading-relaxed font-normal">
+                    <p className="mt-0.5 text-left text-[16px] leading-relaxed text-gray-500">
                       +91 11 27871018 (Ext: 442) / +91 11 27871020
                     </p>
                   </div>
@@ -3319,8 +3049,8 @@ export function ContactPage() {
                     <div className="size-14 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto mb-4">
                       <ShieldCheck size={32} />
                     </div>
-                    <h3 className="text-xl font-bold text-[#172554]">Message Received</h3>
-                    <p className="text-sm text-gray-600 mt-2 max-w-md mx-auto">
+                    <h3 className="t-subheading-2 font-bold! text-[#172554]">Message Received</h3>
+                    <p className="t-content text-gray-600 mt-2 max-w-md mx-auto">
                       Thank you for contacting SEWA 2026. An automated receipt has been registered and our team will review your query within 24–48 hours.
                     </p>
                     <button
@@ -3337,7 +3067,7 @@ export function ContactPage() {
                         setFileName("");
                         setError("");
                       }}
-                      className="mt-6 inline-flex items-center px-5 py-2.5 rounded-xl bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-colors"
+                      className="t-content mt-6 inline-flex items-center px-5 py-2.5 rounded-xl bg-primary text-white font-bold! hover:bg-primary/90 transition-colors"
                     >
                       Submit Another Query
                     </button>
@@ -3346,14 +3076,14 @@ export function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-4">
                     {/* SELECT QUERY CATEGORY */}
                     <div>
-                      <label className="block text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1.5">
+                      <label className="t-content block font-bold! uppercase tracking-wider text-gray-600 mb-1.5">
                         SELECT QUERY CATEGORY
                       </label>
                       <div className="relative">
                         <select
                           value={category}
                           onChange={(e) => setCategory(e.target.value as ContactCategory)}
-                          className="w-full h-10 px-3.5 pr-9 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] font-medium text-gray-800 focus:bg-white focus:border-red-400 outline-none appearance-none cursor-pointer transition-all"
+                          className="t-content w-full h-12 px-3.5 pr-9 rounded-lg bg-[#f8f9fa] border border-gray-200 font-medium! text-gray-800 focus:bg-white focus:border-red-400 outline-none appearance-none cursor-pointer transition-all"
                         >
                           {CONTACT_CATEGORIES.map((c) => (
                             <option key={c} value={c}>
@@ -3365,10 +3095,19 @@ export function ContactPage() {
                       </div>
                     </div>
 
-                    {/* Full Name & Team ID */}
+                    {/*
+                      Full Name & Team ID. Team ID's label runs two lines
+                      ("(Optional)" on its own line below), Full Name's runs
+                      one — so with plain top-aligned columns the inputs would
+                      sit at different heights. Each column is a flex-col
+                      stretched to the row's full height (grid's default
+                      items-stretch) with mt-auto on the input, so both inputs
+                      pin to the bottom of the row and line up regardless of
+                      how tall either label is.
+                    */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-800 mb-1">
+                      <div className="flex flex-col">
+                        <label className="t-content block font-semibold! text-gray-600 mb-1">
                           Full Name *
                         </label>
                         <input
@@ -3377,20 +3116,23 @@ export function ContactPage() {
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="e.g. Aarav Sharma"
-                          className="w-full h-9 sm:h-10 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
+                          className="t-content mt-auto w-full h-12 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
                         />
                       </div>
 
-                      <div>
-                        <label className="block text-xs font-semibold text-gray-800 mb-1">
-                          Team ID / Affiliation ID <span className="font-normal text-gray-400">(Optional)</span>
+                      <div className="flex flex-col">
+                        <label className="t-content block font-semibold! text-gray-600 mb-1">
+                          Team ID / Affiliation ID
+                          <span className="mt-0.5 block text-[14px] font-normal! normal-case tracking-normal text-gray-400">
+                            (Optional)
+                          </span>
                         </label>
                         <input
                           type="text"
                           value={teamId}
                           onChange={(e) => setTeamId(e.target.value)}
                           placeholder="e.g. 2K23/CO/145"
-                          className="w-full h-9 sm:h-10 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
+                          className="t-content mt-auto w-full h-12 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
                         />
                       </div>
                     </div>
@@ -3398,7 +3140,7 @@ export function ContactPage() {
                     {/* Email & Phone */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-800 mb-1">
+                        <label className="t-content block font-semibold! text-gray-600 mb-1">
                           Registered Email *
                         </label>
                         <input
@@ -3407,12 +3149,12 @@ export function ContactPage() {
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="SEWA@dtu.ac.in"
-                          className="w-full h-9 sm:h-10 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
+                          className="t-content w-full h-12 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-xs font-semibold text-gray-800 mb-1">
+                        <label className="t-content block font-semibold! text-gray-600 mb-1">
                           Contact Phone Number *
                         </label>
                         <input
@@ -3421,14 +3163,14 @@ export function ContactPage() {
                           value={phone}
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+91 98765 43210"
-                          className="w-full h-9 sm:h-10 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
+                          className="t-content w-full h-12 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
                         />
                       </div>
                     </div>
 
                     {/* Subject / Matter */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-800 mb-1">
+                      <label className="t-content block font-semibold! text-gray-600 mb-1">
                         Subject / Matter *
                       </label>
                       <input
@@ -3437,13 +3179,13 @@ export function ContactPage() {
                         value={subject}
                         onChange={(e) => setSubject(e.target.value)}
                         placeholder="Brief summary of your query or grievance"
-                        className="w-full h-9 sm:h-10 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
+                        className="t-content w-full h-12 px-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all"
                       />
                     </div>
 
                     {/* Message / Grievance Description */}
                     <div>
-                      <label className="block text-xs font-semibold text-gray-800 mb-1">
+                      <label className="t-content block font-semibold! text-gray-600 mb-1">
                         Message / Grievance Description *
                       </label>
                       <textarea
@@ -3452,11 +3194,11 @@ export function ContactPage() {
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Please provide detailed context regarding your question, prototype issue, or formal grievance..."
-                        className="w-full p-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 text-xs sm:text-[13px] placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all resize-y"
+                        className="t-content w-full p-3.5 rounded-lg bg-[#f8f9fa] border border-gray-200 placeholder:text-gray-400 focus:bg-white focus:border-red-400 outline-none transition-all resize-y"
                       />
                     </div>
                     {error && (
-                      <p role="alert" className="text-xs font-semibold text-[#ff4d4f]">
+                      <p role="alert" className="t-content font-semibold! text-[#ff4d4f]">
                         {error}
                       </p>
                     )}
@@ -3466,12 +3208,12 @@ export function ContactPage() {
                       <button
                         type="submit"
                         disabled={busy}
-                        className="w-full py-3 rounded-xl bg-[#ff4d4f] hover:bg-[#e03b40] text-white font-bold text-xs sm:text-sm transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="t-content w-full py-3.5 rounded-xl bg-[#ff4d4f] hover:bg-[#e03b40] text-white font-bold! transition-all flex items-center justify-center gap-1.5 cursor-pointer active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {busy ? "Sending…" : "Submit Message / Grievance →"}
                       </button>
 
-                      <p className="mt-2 text-center text-[10px] sm:text-[10.5px] text-gray-400 font-normal">
+                      <p className="t-content mt-2 text-center text-gray-400 font-normal!">
                         Turnaround time: Official automated receipt within 5 minutes, review within 24–48 hours.
                       </p>
                     </div>
@@ -3598,28 +3340,92 @@ export function ResourcesPage() {
 
 const faqData = [
   {
-    q: "Who is eligible to participate in SEWA 2026?",
-    a: "The challenge is open to Indian youth across multiple categories: Category A for School Students (Classes 9th to 12th); Category B for Undergraduate & Postgraduate students from any recognized university, college, or technical institute; and Category C for Researchers, Faculty, Innovators, and Early-stage Startups (under 3 years of incorporation). Both individual and interdisciplinary teams are welcome.",
+    q: "What is SEWA FIRST – Rashtriya Youth Innovation Challenge 2026?",
+    a: "SEWA FIRST is a national youth innovation initiative that encourages young minds to identify real-world challenges and develop affordable, sustainable and implementable solutions for society and the nation.",
   },
   {
-    q: "How do I reach the DTU campus on the event day?",
-    a: "Delhi Technological University (DTU) is located at Shahbad Daulatpur, Bawana Road, Rohini, Delhi-110042. The nearest Metro stations are Samaypur Badli (Yellow Line) and Rithala (Red Line). Feeder buses and battery e-rickshaws operate continuously from Samaypur Badli station directly to the DTU main entrance. Registered participant vehicles can access designated parking at the DTU Sports Complex.",
+    q: "Who can participate in the Challenge?",
+    a: "Students, young innovators, researchers, technology teams, startups and eligible institutions can participate, subject to the eligibility criteria specified in the Challenge guidelines.",
+  },
+  {
+    q: "Who is the Regional Coordinator for the Northern Region?",
+    a: "Delhi Technological University (DTU) is the Regional Coordinator for the Northern Region. The region includes J&K, Ladakh, Himachal Pradesh, Uttarakhand, Chandigarh, Delhi, Punjab, Haryana and Uttar Pradesh.",
+  },
+  {
+    q: "Do I need a fully developed product to participate?",
+    a: "No. Participants can begin with an early-stage idea (TRL 1-3) for local/regional/state and TRL (4-6) for national level may participate and progressively develop it through the Challenge towards a functional prototype.",
+  },
+  {
+    q: "Can I propose a solution to a local problem?",
+    a: "Yes. Local and community-level problems are strongly encouraged. Solutions should be affordable, sustainable, practical and capable of being replicated or scaled. Broad area categories may be referred to in the Problem Statements page",
+  },
+  {
+    q: "How will the innovations be evaluated?",
+    a: "Evaluation will be done in stages by eminent jury members on the basis of rubrics.",
+  },
+  {
+    q: "Can interdisciplinary teams participate?",
+    a: "Yes. Interdisciplinary teams are encouraged to combine expertise through team members across from technology, engineering, design, entrepreneurship and other relevant domains to create stronger solutions.",
+  },
+  {
+    q: "Will participants receive mentorship?",
+    a: "Participants will get opportunities to interact with mentors, innovators, academia, industry, startups and government stakeholders for technical guidance and further development of their innovations.",
   },
   {
     q: "Can outside college students and inter-college teams register?",
-    a: "Yes! Inter-college and cross-institutional team formations are fully allowed and actively encouraged. Team members can represent different universities, colleges, departments, or even different states across India. One member should be designated as the Team Leader for all primary communications and submission tracking.",
+    a: "Yes. Students from different colleges can form an inter-college team, subject to the eligibility criteria and submission requirements specified in the Challenge guidelines. Teams should nominate one member as the designated team representative for communication and coordination.",
   },
   {
     q: "How can teams submit complaints or technical grievances regarding evaluation?",
-    a: "Teams can submit queries, evaluation appeals, or technical grievances through the dedicated Contact Us / Grievance form on the portal. Every submission receives an automated official acknowledgement within 5 minutes, and our expert jury and redressal committee reviews each matter within 24–48 hours.",
+    a: "Teams can submit their complaints or technical grievances through the \"Contact Us\" form on the official Challenge website or by emailing the designated grievance email address. All grievances should include the team details, issue description and relevant supporting information.",
   },
   {
-    q: "Are travel allowances or hostel accommodations provided for shortlisted participants?",
-    a: "Shortlisted finalists invited to the physical Grand Finale and National Prototype Showcase at DTU campus will be provided subsidized accommodation in the university guest house and student hostels. Details regarding travel allowances and reimbursements for eligible outstation teams will be issued along with the Regional Hub results circular.",
+    q: "How can I register for the Challenge?",
+    a: "Participants can register through the SEWA FIRST registration portal during the specified registration period. Applicants should provide the required participant, team and innovation details and complete the submission process.",
   },
   {
-    q: "Who can I contact for urgent event day assistance?",
-    a: "For immediate assistance, contact the Northern Region Coordinator Helpdesk at +91 11 27871018 (Ext: 442) or +91 11 27871020, or email sewa2026@dtu.ac.in. On-site physical helpdesk booths will also be stationed at the DTU Student Activity Centre (SAC) and main reception foyer throughout the event days.",
+    q: "How will I be notified about various updates?",
+    a: "Registered participants will receive important updates through their registered email address and official SEWA FIRST communication channels. Participants are advised to regularly check the official website and their email for announcements, deadlines and other updates.",
+  },
+  {
+    q: "What is SEWA FIRST – Rashtriya Youth Innovation Challenge 2026?",
+    a: "SEWA FIRST is a national youth innovation initiative that encourages young minds to identify real-world challenges and develop affordable, sustainable and implementable solutions for society and the nation.",
+  },
+  {
+    q: "Who can participate in the Challenge?",
+    a: "Students, young innovators, researchers, technology teams, startups and eligible institutions can participate, subject to the eligibility criteria specified in the Challenge guidelines.",
+  },
+  {
+    q: "Who is the Regional Coordinator for the Northern Region?",
+    a: "Delhi Technological University (DTU) is the Regional Coordinator for the Northern Region. The region includes J&K, Ladakh, Himachal Pradesh, Uttarakhand, Chandigarh, Delhi, Punjab, Haryana and Uttar Pradesh.",
+  },
+  {
+    q: "Do I need a fully developed product to participate?",
+    a: "No. Participants can begin with an early-stage idea (TRL 1-3) for local/regional/state and TRL (4-6) for national level may participate and progressively develop it through the Challenge towards a functional prototype.",
+  },
+  {
+    q: "Can I propose a solution to a local problem?",
+    a: "Yes. Local and community-level problems are strongly encouraged. Solutions should be affordable, sustainable, practical and capable of being replicated or scaled. Broad area categories may be referred to in the Problem Statements page.",
+  },
+  {
+    q: "How will the innovations be evaluated?",
+    a: "Evaluation will be done in stages by eminent jury members on the basis of rubrics.",
+  },
+  {
+    q: "Can interdisciplinary teams participate?",
+    a: "Yes. Interdisciplinary teams are encouraged to combine expertise from technology, engineering, design, entrepreneurship and other relevant domains to create stronger solutions.",
+  },
+  {
+    q: "Will participants receive mentorship?",
+    a: "Participants will get opportunities to interact with mentors, innovators, academia, industry, startups and government stakeholders for technical guidance and further development of their innovations.",
+  },
+  {
+    q: "How can I register for the Challenge?",
+    a: "Participants can register through the SEWA FIRST registration portal during the specified registration period. Applicants should provide the required participant, team and innovation details and complete the submission process.",
+  },
+  {
+    q: "How will I be notified about various updates?",
+    a: "Registered participants will receive important updates through their registered email address and official SEWA FIRST communication channels. Participants are advised to regularly check the official website and their email for announcements, deadlines and other updates.",
   },
 ];
 
@@ -3653,7 +3459,7 @@ export function FaqPage() {
                     className="rounded-[18px] bg-[#fbfbfb] border border-[#eaecf0] px-6 sm:px-7 py-4 sm:py-4.5 transition-all cursor-pointer hover:border-gray-300 hover:shadow-2xs select-none"
                   >
                     <div className="flex items-center justify-between gap-4">
-                      <h3 className="font-bold text-sm sm:text-[15px] md:text-[16px] text-[#172554] leading-snug">
+                      <h3 className="t-content font-bold! text-[#172554]">
                         {item.q}
                       </h3>
                       <ChevronDown
@@ -3792,28 +3598,55 @@ export function AboutPage() {
                   The Challenge further emphasizes affordability, sustainability, field validation, user feedback and scalability, ensuring that successful innovations are not limited to prototypes but have a clear pathway towards adoption, replication and deployment for the intended beneficiaries.
                 </p>
               </div>
-              <div className="mt-10 sm:mt-14 flex flex-col items-center">
+              <div className="relative left-1/2 mt-10 w-[min(100vw-2rem,1140px)] -translate-x-1/2 sm:mt-14 flex flex-col items-center">
                 <img
                   src={uniqueFeaturesSvg}
                   alt="Unique Features - Complete Innovation Pathway"
-                  className="w-full max-w-3xl h-auto object-contain select-none"
+                  className="w-full max-w-[1100px] h-auto object-contain select-none"
                 />
-                <p className="text-center text-gray-800 font-medium text-base sm:text-lg mt-6">
+                <p className="text-center text-[#172554] font-semibold text-lg sm:text-xl md:text-2xl mt-6 sm:mt-8 tracking-tight">
                   Every solution must demonstrate a complete pathway
                 </p>
               </div>
             </section>
 
             {/* 7. PURPOSE & BENEFITS */}
-            <section aria-labelledby="purpose-benefits-heading" className="min-h-[200px] sm:min-h-[280px]">
+            <section aria-labelledby="purpose-benefits-heading">
               <h2
                 id="purpose-benefits-heading"
                 className="t-main-heading text-[#172554] uppercase"
               >
                 PURPOSE &amp; BENEFITS
               </h2>
-              {/* Space reserved for content */}
-              <div className="py-8 sm:py-14" />
+              <div className="t-content-block space-y-6 sm:space-y-7 text-gray-800">
+                <p className="font-normal text-gray-800">
+                  The Sewa First Innovation Challenge empowers youth to identify real local and national problems and create innovative, practical and scalable solutions that contribute to nation-building and Viksit Bharat.
+                </p>
+
+                <div className="space-y-4">
+                  <p className="font-semibold text-gray-900">
+                    Participants will:
+                  </p>
+                  <ul className="space-y-3 sm:space-y-3.5 pl-1 sm:pl-2">
+                    {[
+                      "Develop innovation & problem-solving skills",
+                      "Apply knowledge to real-world challenges",
+                      "Build teamwork, leadership & entrepreneurial skills",
+                      "Gain exposure to mentors, experts & industry",
+                      "Showcase ideas and gain recognition & incubation opportunities",
+                      "Outstanding innovations will be recognised and awarded.",
+                    ].map((benefit, idx) => (
+                      <li key={idx} className="flex items-start gap-3">
+                        <span
+                          className="mt-2.5 h-1.5 w-1.5 rounded-full bg-[#172554] shrink-0"
+                          aria-hidden="true"
+                        />
+                        <span className="text-gray-800">{benefit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </section>
           </div>
         </main>

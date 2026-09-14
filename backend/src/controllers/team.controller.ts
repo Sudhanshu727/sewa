@@ -1,11 +1,23 @@
 import type { Request, Response } from "express";
+import { AppError } from "../middleware/errorHandler.js";
 import { writeAuditLog } from "../lib/audit.js";
 import * as teamService from "../services/team.service.js";
-import type { AddMemberInput, CreateTeamInput } from "../schemas/team.schema.js";
+import type { AddMemberInput, CreateTeamInput, UpdateTeamInput } from "../schemas/team.schema.js";
 
 export async function createTeam(req: Request, res: Response) {
+  // uploadIdCard (multer) runs ahead of this on the route and populates
+  // req.file - required on create, since every team needs an ID card on
+  // file from the start.
+  if (!req.file) {
+    throw new AppError(400, "An organisation/institution ID card (PDF, JPG, or PNG) is required.");
+  }
+
   const input = req.body as CreateTeamInput;
-  const team = await teamService.createTeam(req.user!.id, input);
+  const team = await teamService.createTeam(req.user!.id, input, {
+    path: req.file.filename,
+    mimetype: req.file.mimetype,
+    originalname: req.file.originalname,
+  });
   await writeAuditLog({ req, userId: req.user!.id, action: "team_create", metadata: { teamId: team.id } });
   res.status(201).json({ team });
 }
@@ -16,8 +28,14 @@ export async function getMyTeam(req: Request, res: Response) {
 }
 
 export async function updateTeam(req: Request, res: Response) {
-  const input = req.body as CreateTeamInput;
-  const team = await teamService.updateTeam(req.params.teamId!, req.user!.id, input);
+  // Unlike create, the ID card is optional here - a team only re-uploads if
+  // it wants to replace the one already on file.
+  const input = req.body as UpdateTeamInput;
+  const idCard = req.file
+    ? { path: req.file.filename, mimetype: req.file.mimetype, originalname: req.file.originalname }
+    : undefined;
+
+  const team = await teamService.updateTeam(req.params.teamId!, req.user!.id, input, idCard);
   await writeAuditLog({ req, userId: req.user!.id, action: "team_update", metadata: { teamId: team.id } });
   res.status(200).json({ team });
 }

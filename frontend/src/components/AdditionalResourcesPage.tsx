@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { ChevronRight, ExternalLink, FileText } from "lucide-react";
+import { Download, ExternalLink } from "lucide-react";
 import { Header, Footer } from "./SewaSite";
 
 type TrlRow = {
@@ -68,23 +68,6 @@ const BADGE_STYLES = [
   { bg: "bg-[#f0eefb]", text: "text-[#6f5fc9]" },
 ];
 
-const documentLinks = [
-  {
-    title: "SEWA 2026 Guidelines Handbook",
-    description: "Consolidated eligibility, registration, and evaluation guidelines.",
-    href: "/guidelines",
-  },
-  {
-    title: "Problem Statement Directory",
-    description: "Full national and community problem statement categories.",
-    href: "/problem-statements",
-  },
-  {
-    title: "100-Day Timeline",
-    description: "Key dates from registration through the Grand Finale.",
-    href: "/events",
-  },
-];
 
 const externalLinks = [
   {
@@ -125,50 +108,26 @@ export function AdditionalResourcesPage() {
                 Resources:
               </h1>
 
-              <div className="mt-10 sm:mt-12 space-y-10 sm:space-y-12">
-                <div>
-                  <h2 className="mb-4 text-base font-bold text-gray-900 tracking-tight">
-                    On This Site
-                  </h2>
-                  <div className="grid grid-cols-1 gap-3.5 sm:grid-cols-2">
-                    {documentLinks.map((doc) => (
-                      <a
-                        key={doc.title}
-                        href={doc.href}
-                        className="flex items-start gap-3 rounded-[18px] border border-[#eaecf0] bg-[#fbfbfb] px-5 py-4 transition-all hover:border-gray-300 hover:shadow-2xs"
-                      >
-                        <FileText size={18} className="mt-0.5 shrink-0 text-primary" strokeWidth={1.8} />
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-bold text-gray-900 leading-snug">{doc.title}</h3>
-                          <p className="mt-1 text-xs text-gray-500 leading-relaxed">{doc.description}</p>
-                        </div>
-                        <ChevronRight size={16} className="ml-auto mt-0.5 shrink-0 text-gray-300" strokeWidth={1.8} />
-                      </a>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <h2 className="mb-4 text-base font-bold text-gray-900 tracking-tight">
-                    External Links
-                  </h2>
-                  <div className="space-y-3">
-                    {externalLinks.map((link) => (
-                      <a
-                        key={link.title}
-                        href={link.href}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-start gap-3 rounded-[18px] border border-[#eaecf0] bg-[#fbfbfb] px-5 py-4 transition-all hover:border-gray-300 hover:shadow-2xs"
-                      >
-                        <div className="min-w-0">
-                          <h3 className="text-sm font-bold text-gray-900 leading-snug">{link.title}</h3>
-                          <p className="mt-1 text-xs text-gray-500 leading-relaxed">{link.description}</p>
-                        </div>
-                        <ExternalLink size={16} className="ml-auto mt-0.5 shrink-0 text-gray-300" strokeWidth={1.8} />
-                      </a>
-                    ))}
-                  </div>
+              <div className="mt-10 sm:mt-12">
+                <h2 className="t-subheading-1 font-bold! mb-4 text-gray-900 tracking-tight">
+                  External Links
+                </h2>
+                <div className="space-y-3">
+                  {externalLinks.map((link) => (
+                    <a
+                      key={link.title}
+                      href={link.href}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-start gap-3 rounded-[18px] border border-[#eaecf0] bg-[#fbfbfb] px-5 py-4 transition-all hover:border-gray-300 hover:shadow-2xs"
+                    >
+                      <div className="min-w-0">
+                        <h3 className="t-content font-bold! text-gray-900">{link.title}</h3>
+                        <p className="t-content mt-1 text-gray-500">{link.description}</p>
+                      </div>
+                      <ExternalLink size={16} className="ml-auto mt-0.5 shrink-0 text-gray-300" strokeWidth={1.8} />
+                    </a>
+                  ))}
                 </div>
               </div>
             </section>
@@ -184,16 +143,32 @@ export function AdditionalResourcesPage() {
                 as the Challenge itself.
               </p>
 
-              <a
-                href="#"
-                className="mt-8 inline-flex items-center gap-3 rounded-2xl border border-[#eaecf0] bg-[#fbfbfb] px-6 py-4 transition-all hover:border-gray-300 hover:shadow-2xs"
-              >
-                <FileText size={20} className="shrink-0 text-primary" strokeWidth={1.8} />
-                <div>
-                  <p className="text-sm font-bold text-gray-900">Download Innovation Playbook (PDF)</p>
-                  <p className="mt-0.5 text-xs text-gray-500">Coming soon</p>
+              {/*
+                Matches the submission-format download card on the Guidelines
+                page exactly (file badge + title on the left, pill button on
+                the right) so the two download affordances look identical.
+                Only a PDF exists here, so there's one pill instead of two.
+              */}
+              <div className="mt-8 flex w-full flex-col items-start justify-between gap-4 rounded-[16px] border border-[#F1F5F9] bg-white p-4 shadow-[0px_2px_8px_rgba(0,0,0,0.02)] sm:flex-row sm:items-center sm:px-6 sm:py-5">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="relative flex h-14 w-11 shrink-0 flex-col items-center justify-center rounded-lg bg-[#EA4335] text-white shadow-sm">
+                    <div className="absolute right-0 top-0 h-3 w-3 rounded-bl bg-[#D93025]" />
+                    <span className="mt-1 text-[10px] font-black tracking-wider">PDF</span>
+                  </div>
+                  <div>
+                    <h3 className="t-content font-bold! text-[#112347]">Innovation Playbook</h3>
+                    <p className="t-content text-gray-500">Coming soon</p>
+                  </div>
                 </div>
-              </a>
+
+                <a
+                  href="#"
+                  className="t-content inline-flex shrink-0 items-center gap-2 self-end rounded-full bg-[#FFF1F2] px-5 py-2.5 font-semibold! text-[#E11D48] transition-colors hover:bg-[#FFE4E6] sm:self-auto"
+                >
+                  <Download className="size-5" strokeWidth={2.2} />
+                  <span>PDF</span>
+                </a>
+              </div>
             </section>
 
             {/* ── Technology Readiness Level (TRL) ── */}
@@ -204,12 +179,12 @@ export function AdditionalResourcesPage() {
 
               <div className="mt-10 sm:mt-12 overflow-hidden rounded-2xl border border-[#eaecf0]">
                 <div className="overflow-x-auto">
-                  <table className="w-full min-w-[640px] text-left text-sm">
+                  <table className="w-full min-w-[880px] text-left">
                     <thead className="bg-[#1c2b40] text-white">
                       <tr>
-                        <th className="w-28 px-5 py-3.5 text-xs font-bold uppercase tracking-wide">TRL</th>
-                        <th className="w-[30%] px-5 py-3.5 text-xs font-bold uppercase tracking-wide">Level</th>
-                        <th className="px-5 py-3.5 text-xs font-bold uppercase tracking-wide">Description</th>
+                        <th className="t-content w-36 px-5 py-4 font-bold! uppercase tracking-wide">TRL</th>
+                        <th className="t-content w-[30%] px-5 py-4 font-bold! uppercase tracking-wide">Level</th>
+                        <th className="t-content px-5 py-4 font-bold! uppercase tracking-wide">Description</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -222,15 +197,15 @@ export function AdditionalResourcesPage() {
                           >
                             <td className="px-5 py-4 align-top">
                               <span
-                                className={`inline-flex items-center justify-center rounded-md px-2.5 py-1 text-xs font-bold ${badge.bg} ${badge.text}`}
+                                className={`t-content inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 font-bold! ${badge.bg} ${badge.text}`}
                               >
                                 {row.level}
                               </span>
                             </td>
-                            <th scope="row" className="px-5 py-4 align-top text-sm font-bold text-gray-900">
+                            <th scope="row" className="t-content px-5 py-4 align-top font-bold! text-gray-900">
                               {row.title}
                             </th>
-                            <td className="px-5 py-4 align-top text-sm leading-relaxed text-gray-600">
+                            <td className="t-content px-5 py-4 align-top text-gray-600">
                               {row.description}
                             </td>
                           </tr>

@@ -1,13 +1,29 @@
 import type { Prisma, TeamMember } from "@prisma/client";
+import { unlink } from "node:fs/promises";
+import path from "node:path";
+import { env } from "../config/env.js";
 import { prisma } from "../config/prisma.js";
 import { AppError } from "../middleware/errorHandler.js";
 import { TEAM_MAX_MEMBERS, TEAM_MIN_MEMBERS } from "../schemas/team.schema.js";
-import type { AddMemberInput, CreateTeamInput } from "../schemas/team.schema.js";
+import type { AddMemberInput, CreateTeamInput, UpdateTeamInput } from "../schemas/team.schema.js";
+import { resolveProblemSelection } from "./problemStatement.service.js";
 import { sendTeamMemberAddedEmail, sendTeamRegistrationEmail } from "../utils/mailer.js";
 
-export async function createTeam(leaderUserId: string, input: CreateTeamInput) {
+export interface UploadedIdCard {
+  /** multer's on-disk filename (a UUID, not the client's original name). */
+  path: string;
+  mimetype: string;
+  originalname: string;
+}
+
+export async function createTeam(leaderUserId: string, input: CreateTeamInput, idCard: UploadedIdCard) {
   const existing = await prisma.team.findFirst({ where: { leaderUserId } });
   if (existing) {
+    // The upload already landed on disk before this check runs (multer
+    // parses the request before validateBody/the controller ever executes),
+    // so the now-orphaned file is cleaned up rather than left behind for
+    // every rejected duplicate-registration attempt.
+    await deleteUploadedFile(idCard.path);
     throw new AppError(409, "You have already registered a team.");
   }
 
@@ -15,46 +31,114 @@ export async function createTeam(leaderUserId: string, input: CreateTeamInput) {
 
   // Create the team and seed the leader as the first team_members row in
   // one transaction, so team_members is always the single source of truth
-  // for roster membership (no team can exist with zero members).
-  return prisma.$transaction(async (tx: Prisma.TransactionClient) => {
-    const team = await tx.team.create({
-      data: {
-        name: input.name,
-        institute: input.institute,
-        theme: input.theme,
-        problemStatement: input.problemStatement,
-        leaderUserId,
-      },
-    });
+  // for roster membership (no team can exist with zero members). The
+  // problem-selection resolution (which may assign a sequence number) also
+  // has to be inside this same transaction - see problemStatement.service.ts.
+  try {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const { theme, problemStatement, problemStatementId } = await resolveProblemSelection(tx, input);
 
-    await tx.teamMember.create({
-      data: {
-        teamId: team.id,
-        userId: leader.id,
-        firstName: leader.firstName,
-        lastName: leader.lastName,
-        email: leader.email,
-        phone: leader.phone,
-        role: "leader",
-      },
-    });
+      const team = await tx.team.create({
+        data: {
+          name: input.name,
+          institute: input.institute,
+          institutionAddress: input.institutionAddress,
+          theme,
+          problemStatement,
+          problemCategoryCode: input.problemCategoryCode,
+          problemOptionType: input.problemOptionType,
+          proposedProblemStatement: input.problemOptionType === "open" ? input.proposedProblemStatement : null,
+          problemStatementId,
+          idCardPath: idCard.path,
+          idCardMimeType: idCard.mimetype,
+          idCardOriginalName: idCard.originalname,
+          leaderUserId,
+        },
+      });
 
-    return team;
-  });
+      await tx.teamMember.create({
+        data: {
+          teamId: team.id,
+          userId: leader.id,
+          firstName: leader.firstName,
+          lastName: leader.lastName,
+          email: leader.email,
+          phone: leader.phone,
+          role: "leader",
+        },
+      });
+
+      return team;
+    });
+  } catch (err) {
+    // Team creation failed after the file was already written to disk -
+    // clean it up rather than leaking an unreferenced upload.
+    await deleteUploadedFile(idCard.path);
+    throw err;
+  }
 }
 
-export async function updateTeam(teamId: string, leaderUserId: string, input: CreateTeamInput) {
-  await getOwnedTeamOrThrow(teamId, leaderUserId); // also enforces draft-only via its status check
+export async function updateTeam(
+  teamId: string,
+  leaderUserId: string,
+  input: UpdateTeamInput,
+  idCard: UploadedIdCard | undefined,
+) {
+  const existingTeam = await getOwnedTeamOrThrow(teamId, leaderUserId); // also enforces draft-only via its status check
+  const previousIdCardPath = existingTeam.idCardPath;
 
-  return prisma.team.update({
-    where: { id: teamId },
-    data: {
-      name: input.name,
-      institute: input.institute,
-      theme: input.theme,
-      problemStatement: input.problemStatement,
-    },
-  });
+  let updated: Awaited<ReturnType<typeof prisma.team.update>>;
+  try {
+    updated = await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+      const { theme, problemStatement, problemStatementId } = await resolveProblemSelection(tx, input);
+
+      return tx.team.update({
+        where: { id: teamId },
+        data: {
+          name: input.name,
+          institute: input.institute,
+          institutionAddress: input.institutionAddress,
+          theme,
+          problemStatement,
+          problemCategoryCode: input.problemCategoryCode,
+          problemOptionType: input.problemOptionType,
+          proposedProblemStatement: input.problemOptionType === "open" ? input.proposedProblemStatement : null,
+          problemStatementId,
+          ...(idCard && {
+            idCardPath: idCard.path,
+            idCardMimeType: idCard.mimetype,
+            idCardOriginalName: idCard.originalname,
+          }),
+        },
+      });
+    });
+  } catch (err) {
+    // The update did not commit - the NEW upload (if any) is orphaned and
+    // the OLD file is still the one actually referenced by the team, so
+    // only the new one is cleaned up here.
+    if (idCard) await deleteUploadedFile(idCard.path);
+    throw err;
+  }
+
+  // Update committed. Only now, on the success path, is the PREVIOUS card
+  // actually superseded and safe to remove.
+  if (idCard && previousIdCardPath && previousIdCardPath !== idCard.path) {
+    await deleteUploadedFile(previousIdCardPath).catch(() => {
+      // Best-effort: an orphaned old file is a disk-space nuisance, not a
+      // correctness problem, so this must never fail the request itself.
+    });
+  }
+
+  return updated;
+}
+
+async function deleteUploadedFile(storedFilename: string) {
+  try {
+    await unlink(path.join(env.UPLOAD_DIR, path.basename(storedFilename)));
+  } catch {
+    // File may already be gone, or never existed (e.g. called on a bad
+    // input path) - either way this is cleanup, not a critical operation.
+  }
 }
 
 async function getOwnedTeamOrThrow(teamId: string, leaderUserId: string) {

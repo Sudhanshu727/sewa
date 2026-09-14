@@ -10,6 +10,9 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default defineConfig(({ command }) => ({
+  // Vite treats .pdf as an asset out of the box but not .pptx, so the
+  // submission-format decks would fail to resolve without this.
+  assetsInclude: ["**/*.pptx"],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),

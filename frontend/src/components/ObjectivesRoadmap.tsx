@@ -9,9 +9,11 @@ import { Fragment, type ReactNode } from "react";
  * Unlike the timeline and benefits diagrams this is an ordinary flow layout,
  * so it reflows naturally and needs no scaling.
  *
- * Card titles and body copy come from the type scale (t-subheading-2 and
- * t-content) so they stay in proportion to each other and to the rest of the
- * site. The badge sizes below are in explicit pixels rather than Tailwind's
+ * Card titles and body copy both come from the type scale, at the same
+ * t-content font-size — the title stays bold for hierarchy, but matches
+ * the body's actual size rather than being scaled down or up.
+ *
+ * The badge sizes below are in explicit pixels rather than Tailwind's
  * rem scale, because the site sets html{font-size:18px} and every rem-based
  * size would render 1.125x larger than the source design intended.
  */
@@ -317,7 +319,7 @@ export function ObjectivesRoadmap() {
 
             {/* Content card */}
             <div className="roadmap-card px-5 py-5 sm:px-6">
-              <h2 className="t-subheading-2 mb-2 text-left tracking-tight text-[#0f172a] [hyphens:none]">
+              <h2 className="t-content font-bold! mb-2 text-left tracking-tight text-[#0f172a] [hyphens:none]">
                 {item.title}
               </h2>
               <p className="t-content text-left text-[#475569] [hyphens:none]">

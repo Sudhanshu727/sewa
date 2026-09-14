@@ -111,6 +111,27 @@ const phases: Phase[] = [
   },
 ];
 
+const phaseGroups = [
+  {
+    label: "Explore & Understand",
+    surface: "#e0f0fe",
+    ink: "#0284c7",
+    steps: steps.slice(0, 3),
+  },
+  {
+    label: "Ideate & Build",
+    surface: "#fde8ec",
+    ink: "#e11d48",
+    steps: steps.slice(3, 5),
+  },
+  {
+    label: "Validate & Create Impact",
+    surface: "#def5e5",
+    ink: "#166534",
+    steps: steps.slice(5, 8),
+  },
+];
+
 const arrow = (
   <div
     aria-hidden="true"
@@ -125,15 +146,52 @@ const arrow = (
 export function InnovationJourney() {
   return (
     <div className="w-full">
-      {/* Mobile swipe indicator */}
-      <div className="md:hidden flex items-center justify-center gap-1.5 text-[11px] font-semibold text-slate-600 mb-3.5 bg-slate-100/90 py-1.5 px-3.5 rounded-full border border-slate-200/70 w-fit mx-auto select-none">
-        <span>Scroll to explore 8-step pathway</span>
-        <span className="text-primary font-bold text-xs">→</span>
+      {/* Mobile / Tablet Responsive View (< 1024px) — No horizontal scrolling */}
+      <div className="block lg:hidden space-y-4 sm:space-y-6">
+        {phaseGroups.map((phase) => (
+          <div
+            key={phase.label}
+            className="rounded-2xl border border-slate-200/80 bg-white p-4 sm:p-5 shadow-2xs"
+          >
+            {/* Phase Header Badge */}
+            <div
+              className="mb-4 inline-flex items-center rounded-lg px-3 py-1.5 text-xs sm:text-sm font-bold uppercase tracking-wider shadow-2xs"
+              style={{ backgroundColor: phase.surface, color: phase.ink }}
+            >
+              <span>{phase.label}</span>
+            </div>
+
+            {/* Steps in this Phase */}
+            <div className="relative border-l-2 border-slate-200/80 ml-3.5 space-y-3.5 pl-4 sm:pl-5">
+              {phase.steps.map((step) => (
+                <div key={step.number} className="relative">
+                  {/* Step circle on the vertical spine */}
+                  <div
+                    className="absolute -left-[27px] top-1 size-6.5 rounded-full flex items-center justify-center font-extrabold text-[11px] shadow-2xs ring-2 ring-white"
+                    style={{ backgroundColor: step.surface, color: step.ink }}
+                  >
+                    {step.number}
+                  </div>
+
+                  {/* Step content card */}
+                  <div className="rounded-xl bg-slate-50/70 border border-slate-200/60 p-3 sm:p-3.5">
+                    <h4 className="text-xs sm:text-sm font-bold uppercase tracking-wide text-slate-900 mb-1 [hyphens:none]">
+                      {step.title}
+                    </h4>
+                    <p className="text-[12px] sm:text-xs text-slate-600 leading-relaxed [hyphens:none]">
+                      {step.body}
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
       </div>
 
-      {/* Horizontal scroller: the sequence must not reflow */}
-      <div className="overflow-x-auto pb-4 scroll-smooth touch-pan-x">
-        <div className="flex min-w-[1180px] flex-col gap-10 lg:gap-12">
+      {/* Desktop Infographic (>= 1024px) */}
+      <div className="hidden lg:block overflow-x-auto pb-4 scroll-smooth">
+        <div className="flex min-w-[1000px] xl:min-w-[1180px] flex-col gap-10 lg:gap-12">
           {/* Eight sequential steps */}
           <div className="relative grid grid-cols-8 items-start" aria-label="Eight steps of innovation">
             {steps.map((step, i) => (

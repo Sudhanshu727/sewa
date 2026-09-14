@@ -1,8 +1,9 @@
 import { Router } from "express";
 import * as teamController from "../controllers/team.controller.js";
 import { validateBody } from "../middleware/validate.middleware.js";
+import { uploadIdCard } from "../middleware/upload.middleware.js";
 import { requireAuth, requireVerifiedEmail } from "../middleware/auth.middleware.js";
-import { createTeamSchema, addMemberSchema } from "../schemas/team.schema.js";
+import { createTeamSchema, updateTeamSchema, addMemberSchema } from "../schemas/team.schema.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const teamRouter = Router();
@@ -11,10 +12,24 @@ export const teamRouter = Router();
 // registration is only reachable after signup + OTP verification + signin.
 teamRouter.use(requireAuth, requireVerifiedEmail);
 
-teamRouter.post("/", validateBody(createTeamSchema), asyncHandler(teamController.createTeam));
+// Both routes are multipart/form-data (an ID card file rides alongside the
+// text fields) - uploadIdCard (multer) must run BEFORE validateBody, since
+// validateBody reads req.body, and req.body's text fields aren't populated
+// until multer has parsed the multipart request.
+teamRouter.post(
+  "/",
+  uploadIdCard,
+  validateBody(createTeamSchema),
+  asyncHandler(teamController.createTeam),
+);
 teamRouter.get("/me", asyncHandler(teamController.getMyTeam));
 // Draft-only - getOwnedTeamOrThrow (via updateTeam) 409s once the team is submitted.
-teamRouter.patch("/:teamId", validateBody(createTeamSchema), asyncHandler(teamController.updateTeam));
+teamRouter.patch(
+  "/:teamId",
+  uploadIdCard,
+  validateBody(updateTeamSchema),
+  asyncHandler(teamController.updateTeam),
+);
 teamRouter.post(
   "/:teamId/members",
   validateBody(addMemberSchema),

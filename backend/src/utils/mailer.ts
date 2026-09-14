@@ -7,6 +7,9 @@ const transporter = nodemailer.createTransport({
   port: env.SMTP_PORT,
   secure: env.SMTP_PORT === 465,
   auth: { user: env.SMTP_USER, pass: env.SMTP_PASS },
+  connectionTimeout: 4000,
+  greetingTimeout: 4000,
+  socketTimeout: 4000,
 });
 
 type OtpEmailPurpose = "email_verify" | "password_reset";
@@ -29,15 +32,29 @@ export async function sendOtpEmail(
 ): Promise<void> {
   const { subject, lead } = COPY[purpose];
 
-  await transporter.sendMail({
-    from: env.SMTP_FROM,
-    to,
-    subject,
-    text: `${lead} ${code}. It expires in ${env.OTP_EXPIRY_MINUTES} minutes. Do not share this code with anyone.`,
-    html: `<p>${lead} <strong>${code}</strong>.</p>
-           <p>It expires in ${env.OTP_EXPIRY_MINUTES} minutes. Do not share this code with anyone, including SEWA staff.</p>`,
-  });
-  logger.info({ to, purpose }, "otp_email_sent");
+  // In development, immediately print OTP to terminal so signup/testing is instant
+  if (env.NODE_ENV !== "production") {
+    // eslint-disable-next-line no-console
+    console.log(`\n==============================================\n🔑 [DEV MODE] OTP for ${to}: ${code}\n==============================================\n`);
+  }
+
+  try {
+    await transporter.sendMail({
+      from: env.SMTP_FROM,
+      to,
+      subject,
+      text: `${lead} ${code}. It expires in ${env.OTP_EXPIRY_MINUTES} minutes. Do not share this code with anyone.`,
+      html: `<p>${lead} <strong>${code}</strong>.</p>
+             <p>It expires in ${env.OTP_EXPIRY_MINUTES} minutes. Do not share this code with anyone, including SEWA staff.</p>`,
+    });
+    logger.info({ to, purpose }, "otp_email_sent");
+  } catch (err) {
+    if (env.NODE_ENV === "development") {
+      logger.warn({ err: (err as Error).message, to }, "SMTP delivery failed/timed out in development. Use terminal OTP above.");
+    } else {
+      throw err;
+    }
+  }
 }
 
 export interface TeamEmailPayload {
